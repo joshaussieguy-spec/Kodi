@@ -46,10 +46,10 @@ def zipdir(src, addon_id, version):
         for base, _, files in os.walk(src):
             for fn in files:
                 full = os.path.join(base, fn)
-                rel = os.path.relpath(full, os.path.dirname(src))
+                rel = os.path.relpath(full, src)
                 if "__pycache__" in rel:
                     continue
-                z.write(full, os.path.join(addon_id, rel))
+                z.write(full, os.path.join(addon_id, rel.replace(os.sep, "/")))
     return out
 
 
