@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+    id="plugin.video.arabicshows"
+    version="1.0.6"
+    name="Arabic Shows"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="inputstream.ffmpegdirect" version="21.0.0" optional="true"/>
+        <import addon="plugin.video.youtube" version="7.0.0" optional="true"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Live Arabic TV + YouTube Drama — Syrian, Lebanese, Egyptian, Iraqi, Jordanian</summary>
+        <description>Watch live Arabic TV channels and YouTube drama content. 7 live TV groups: Syrian, Lebanese, Egyptian, Iraqi, Jordanian, Arabic Drama &amp; Movies, and Music. Plus YouTube sections for Syrian and Lebanese/Egyptian drama series including Bab Al Hara all seasons. 85+ live channels total. Made with love for Walaa.</description>
+        <disclaimer>This addon uses publicly available streaming links from iptv-org and YouTube channels. The author does not host or stream any content. YouTube section requires the plugin.video.youtube Kodi addon.</disclaimer>
+        <platform>all</platform>
+        <language>ar</language>
+        <license>GPL-3.0</license>
+        <forum>https://www.reddit.com/r/Addons4Kodi</forum>
+        <website>https://iptv-org.github.io</website>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
+        <news>v1.0.6 - Added 28 new channels: Egyptian group (MBC Masr, MBC 1 Egypt, Al Masriyah, CBC Sofra, Mekameleen), Iraqi group (Al Iraqia, Alhurra Iraq, Iraq Future), Jordan group (Jordan Satellite, Archive, Kitchen, Tourism, Roya Kids), plus MBC 1/5/Iraq/Mood, Alikhbaria Syria, Damascus Radio, LBC HD, Al Manar, Ajyal TV. Added YouTube drama section (Syrian + Lebanese/Egyptian channels &amp; playlists). Removed 2 dead streams (Alalam, iFilm). v1.0.5 - Added 15 channels including Bab Al Hara, MBC Masr Drama, Spacetoon. v1.0.4 - Added 22 Arabic music video channels.</news>
+    </extension>
+</addon>

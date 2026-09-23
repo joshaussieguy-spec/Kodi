@@ -1,0 +1,380 @@
+[
+  {
+    "name": "Aflam (Movies)",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx001/playlist.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Bab Al Hara",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx010/playlist.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Maraya",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx008/playlist.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Movies Action",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx011/playlist.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Movies Thriller",
+    "url": "https://shd-amg-fast.edgenextcdn.net/tx012/playlist.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Mix Hollywood",
+    "url": "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC Drama",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-drama/2c28a458e2f3253e678b07ac7d13fe71/index.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC+ Drama",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-plus-drama/e37251ec2aac8f6c98f75cd0fa37cd28/index.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC Masr Drama",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-drama/567b703c19ede6598222de81b0e4508b/index.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "CBC Drama",
+    "url": "https://flu.systemnet.tv/CBCDrama/index.m3u8",
+    "group": "Drama & Movies",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC 1",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1/15cf99af5de54063fdabfefe66adc075/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC 1 Egypt",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-1-na/eec141533c90dd34722c503a296dd0d8/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC 4",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-4/24f134f1cd63db9346439e96b86ca6ed/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC 5",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-5/ee6b000cee0629411b666ab26cb13e9b/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC Masr",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr/956eac069c78a35d47245db6cdbb1575/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MBC Masr 2",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mbc-masr-2/754931856515075b0aabf0e583495c68/index.m3u8",
+    "group": "Entertainment",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "CBC",
+    "url": "https://flu.systemnet.tv/CBC/index.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "CBC Sofra",
+    "url": "https://flu.systemnet.tv/CBCSofra/index.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Masriyah",
+    "url": "http://185.9.2.18/chid_247/index.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "NogoumFMTV",
+    "url": "https://nogoumtv.nrpstream.com/hls/stream.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Panorama FM",
+    "url": "https://d6izdil55uftn.cloudfront.net/out/v1/0a06d1d6377c47edbd48721ed724bd08/index.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "LBC",
+    "url": "http://185.9.2.18/chid_327/index.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "LBC International",
+    "url": "http://185.9.2.18/chid_521/index.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "MTV Lebanon",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-mtv-lebanon/b8ebb2a5affb812f1541712adde10e26/index.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Jadeed",
+    "url": "http://185.9.2.18/chid_391/mono.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "OTV",
+    "url": "https://otv.hibridcdn.net/otv/tv_abr/playlist.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Future TV",
+    "url": "https://live.kwikmotion.com/futurelive/ftv.smil/playlist.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Aghani Aghani TV",
+    "url": "https://cdn.streamlane.tv/hls/aghanitv/index.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Arabica TV",
+    "url": "http://istream.binarywaves.com:8081/hls/arabica/playlist.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Red TV Lebanon",
+    "url": "https://live.kwikmotion.com/redtvlive/redtv.smil/playlist.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Mayadeen",
+    "url": "https://mdnlv.cdn.octivid.com/almdn/smil:mpegts.stream.smil/playlist.m3u8",
+    "group": "Lebanon",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Syria TV",
+    "url": "https://live.kwikmotion.com/syriatvlive/syriatv.smil/playlist_dvr.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al-Souriya TV",
+    "url": "https://shd-gcp-live.edgenextcdn.net/live/bitmovin-al-souriya-tv/e3150760fa5fd62776225433b8c3d406/index.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Halab Today TV",
+    "url": "https://halabtoday-live.lg.mncdn.com/halabtoday/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Alikhbaria Syria",
+    "url": "http://185.9.2.18/chid_423/index.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Shams TV",
+    "url": "https://stream.shams.tv/hls/stream.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "NourSAT",
+    "url": "https://svs.itworkscdn.net/nour4satlive/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Nour Al Koddas",
+    "url": "https://svs.itworkscdn.net/nour1satlive/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Nour Al Sharq",
+    "url": "https://svs.itworkscdn.net/nour8satlive/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Nour El Shabeb",
+    "url": "https://svs.itworkscdn.net/nour3satlive/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Nour Mariam",
+    "url": "https://svs.itworkscdn.net/nour9satlive/livestream/playlist.m3u8",
+    "group": "Syria",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Dubai TV International",
+    "url": "http://185.9.2.18/chid_139/index.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Sharjah TV",
+    "url": "https://live.kwikmotion.com/smc1live/smc1tv.smil/playlist.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Ajman TV",
+    "url": "https://cdn1.logichost.in/ajmantv/live/playlist.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Araby TV",
+    "url": "https://live.kwikmotion.com/alaraby1live/alaraby_abr/playlist.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Araby TV 2",
+    "url": "https://live.kwikmotion.com/alaraby2live/alaraby2.smil/playlist.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Amman TV",
+    "url": "https://ammantv-live.ercdn.net/ammantvhd/ammantvhd.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Dijlah TV",
+    "url": "https://ghaasiflu.online/Dijlah/index.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Lana TV",
+    "url": "https://cdn.streamlane.tv/hls/ltv/master.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "StoryChannel TV",
+    "url": "https://136044159.r.cdnsun.net/storychannel.m3u8",
+    "group": "General",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Elsharq TV",
+    "url": "https://mn-nl.mncdn.com/elsharq_live/live/playlist.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Mekameleen TV",
+    "url": "https://mn-nl.mncdn.com/mekameleen/smil:mekameleentv.smil/playlist.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Hayat TV",
+    "url": "https://cdn3.wowza.com/5/OE5HREpIcEkySlNT/alhayat-live/ngrp:livestream_all/playlist.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  },
+  {
+    "name": "Al Kahera Wal Nas",
+    "url": "http://185.9.2.18/chid_347/index.m3u8",
+    "group": "Egypt",
+    "status": "200",
+    "referrer": ""
+  }
+]

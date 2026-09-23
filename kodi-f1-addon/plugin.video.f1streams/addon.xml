@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+    id="plugin.video.f1streams"
+    version="2.5.0"
+    name="F1 Streams (Live + Replays)"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Watch F1 live streams and full race replays in Kodi</summary>
+        <description>Two sources in one addon: LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen), and FULL RACE REPLAYAYS from fullraces.com (F1, F2, F3, NASCAR, IndyCar, Formula E, WRC, WSBK). No more popup hell — just clean Kodi playback.</description>
+        <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
+        <platform>all</platform>
+        <language>en</language>
+        <license>GPL-3.0</license>
+        <forum>https://www.reddit.com/r/Addons4Kodi</forum>
+        <website>https://daddylive.mov</website>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
+        <news>v2.3.0 - Updated for daddylive.mov (old daddylive.site seized by Operation Offsides). New stream API via chat.cfbu247.sbs. 19 motorsport channels (Sky Sports F1 UK/DE/IT, DAZN F1, Canal+ F1, MotoGP, Racing, FloRacing, etc). v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
+    </extension>
+</addon>

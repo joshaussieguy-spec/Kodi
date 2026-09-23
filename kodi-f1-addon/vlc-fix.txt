@@ -1,0 +1,22 @@
+🏎️ F1 STREAMS — VLC FIX
+
+The streams require a Referer header. Use these commands:
+
+▶️ VLC (command line):
+vlc --http-referrer=https://getembed.live/ "https://obstreamx.click/live/q3zz9ru56f.m3u8"
+
+▶️ MPV:
+mpv --http-header-fields="Referer: https://getembed.live/" "https://obstreamx.click/live/q3zz9ru56f.m3u8"
+
+▶️ VLC GUI method:
+1. Open VLC
+2. Media → Open Network Stream
+3. Paste the URL
+4. Click "Show options" 
+5. Add this to the HTTP field: Referer: https://getembed.live/
+6. Play
+
+📋 All 3 streams (Austrian GP + Dutch GP):
+https://obstreamx.click/live/q3zz9ru56f.m3u8  (Austrian GP - Multi)
+https://obstreamx.click/live/20iyfxolfv.m3u8  (Austrian GP - IT Channel F1)
+https://obstreamx.click/live/4f7xb2otg5.m3u8  (Dutch GP - Multi)

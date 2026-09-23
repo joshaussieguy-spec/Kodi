@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <category label="General">
+        <setting id="source_domain" type="text" label="Source Domain" default="daddylive.site"/>
+        <setting id="auto_play" type="bool" label="Auto-play first available stream" default="false"/>
+        <setting id="filter_f1_only" type="bool" label="Show F1/Motorsport only" default="true"/>
+    </category>
+    <category label="Advanced">
+        <setting id="custom_ua" type="text" label="Custom User Agent" default=""/>
+        <setting id="timeout" type="number" label="Request timeout (seconds)" default="15"/>
+        <setting id="debug" type="bool" label="Enable debug logging" default="false"/>
+    </category>
+</settings>

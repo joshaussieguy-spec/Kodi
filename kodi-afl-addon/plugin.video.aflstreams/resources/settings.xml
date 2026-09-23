@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+    <category label="General">
+        <setting id="show_adelaide_time" type="bool" label="Show Adelaide time in brackets" default="true"/>
+        <setting id="show_notifications" type="bool" label="Show navigation notifications" default="false"/>
+    </category>
+</settings>

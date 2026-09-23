@@ -1,0 +1,7 @@
+🏎️ F1 STREAM - PROXY SERVER RUNNING
+
+Open this URL in VLC on your phone:
+http://<pc-ip>:8888/<stream-key>.m3u8
+
+Make sure your phone is on the SAME WiFi network as your PC.
+The proxy automatically adds the Referer header — just open and it should play!
