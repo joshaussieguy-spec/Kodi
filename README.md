@@ -1,6 +1,6 @@
 # Kodi Apps
 
-Collection of Josh's Kodi addons and helpers.
+Collection of Kodi addons — thetallone repository.
 
 ## Addons
 
@@ -22,3 +22,8 @@ Collection of Josh's Kodi addons and helpers.
 Addons run on the HTPC laptop (Kodi from Windows Store). Deploy = scp file swap — see `kodi-f1-addon/REMOTE_ACCESS.md` for the layout; addresses/keys stay in local notes, not in the repo.
 
 Never restart Kodi mid-watch — stop playback via JSON-RPC `Player.Stop` first.
+## Install the repo addon (thetallone)
+
+1. Download `repo/repository.thetallone-1.1.0.zip`
+2. Kodi → Settings → Add-ons → Install from zip file
+3. All plugins (AFL / Arabic / F1) install from it and auto-update.
