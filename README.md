@@ -24,6 +24,6 @@ Addons run on the HTPC laptop (Kodi from Windows Store). Deploy = scp file swap 
 Never restart Kodi mid-watch — stop playback via JSON-RPC `Player.Stop` first.
 ## Install the repo addon (thetallone)
 
-1. Download `repo/repository.thetallone-1.1.0.zip`
+1. Download from `repo/zips/repository.thetallone/repository.thetallone-1.1.0.zip`
 2. Kodi → Settings → Add-ons → Install from zip file
 3. All plugins (AFL / Arabic / F1) install from it and auto-update.
