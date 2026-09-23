@@ -2,8 +2,9 @@
 """Build the Kodi repository zips: repository zip + per-addon zips + addons.xml.
 
 Run from repo root:  python repo/build.py
-Outputs into repo/ — ready to commit & push. Kodi installs
-repository.thetallone-1.1.0.zip, then auto-installs/updates
+Outputs into repo/zips/<addon-id>/ — the layout Kodi expects
+(datadir/<addon-id>/<addon-id>-<version>.zip). Kodi installs
+repository.thetallone zip, then auto-installs/updates
 every addon listed in addons.xml.
 """
 import hashlib
@@ -13,6 +14,7 @@ import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO_DIR = os.path.join(ROOT, "repo")
+ZIPS_DIR = os.path.join(REPO_DIR, "zips")
 REPO_ADDON_ID = "repository.thetallone"
 REPO_ADDON_DIR = "repo/repository.thetallone"  # listed in addons.xml too, for updates
 
@@ -34,8 +36,12 @@ def version_of(addon_dir):
     return m.group(2) if m else "0.0.0"
 
 
-def zipdir(src, dest, addon_id, version):
-    out = os.path.join(REPO_DIR, f"{addon_id}-{version}.zip")
+def zipdir(src, addon_id, version):
+    """Zip <src> into repo/zips/<addon_id>/<addon_id>-<version>.zip with
+    the addon folder at the zip root (Kodi requirement)."""
+    out_dir = os.path.join(ZIPS_DIR, addon_id)
+    os.makedirs(out_dir, exist_ok=True)
+    out = os.path.join(out_dir, f"{addon_id}-{version}.zip")
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for base, _, files in os.walk(src):
             for fn in files:
@@ -43,30 +49,18 @@ def zipdir(src, dest, addon_id, version):
                 rel = os.path.relpath(full, os.path.dirname(src))
                 if "__pycache__" in rel:
                     continue
-                z.write(full, os.path.join(os.path.basename(src), rel))
-    return out
-
-
-def zip_repository():
-    src = os.path.join(REPO_DIR, "repository.thetallone")
-    out = os.path.join(REPO_DIR, f"{REPO_ADDON_ID}-1.1.0.zip")
-    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        for base, _, files in os.walk(src):
-            for fn in files:
-                full = os.path.join(base, fn)
-                rel = os.path.relpath(full, REPO_DIR)
-                z.write(full, rel)
+                z.write(full, os.path.join(addon_id, rel))
     return out
 
 
 def main():
     entries = []
+    built = []
     for d in ADDON_DIRS:
         addon_dir = os.path.join(ROOT, d)
         addon_id = os.path.basename(d)
         version = version_of(addon_dir)
-        if d != REPO_ADDON_DIR:
-            zipdir(addon_dir, REPO_DIR, addon_id, version)
+        built.append(zipdir(addon_dir, addon_id, version))
         with open(os.path.join(addon_dir, "addon.xml"), encoding="utf-8") as f:
             entries.append(f.read())
     addons_xml = (
@@ -80,16 +74,19 @@ def main():
     md5 = hashlib.md5(addons_xml.encode("utf-8")).hexdigest()
     with open(os.path.join(REPO_DIR, "addons.xml.md5"), "w") as f:
         f.write(md5)
-    zr = zip_repository()
+
+    # Clean stale zips (old versions) so repo/zips only offers current files
+    keep = set(built)
+    for base, _, files in os.walk(ZIPS_DIR):
+        for fn in files:
+            p = os.path.join(base, fn)
+            if p not in keep:
+                os.remove(p)
+
     print("Built:")
     print("  repo/addons.xml + addons.xml.md5")
-    for d in ADDON_DIRS:
-        if d == REPO_ADDON_DIR:
-            continue
-        aid = os.path.basename(d)
-        v = version_of(os.path.join(ROOT, d))
-        print(f"  repo/{aid}-{v}.zip")
-    print(f"  repo/{REPO_ADDON_ID}-1.1.0.zip")
+    for p in built:
+        print("  " + os.path.relpath(p, REPO_DIR))
 
 
 if __name__ == "__main__":
