@@ -30,10 +30,13 @@ ADDON_HANDLE = int(sys.argv[1])
 ADDON_URL = sys.argv[0]
 
 # v2.5.0 — Added SportHD F1 backup streams (DAZN F1, Disney+, FOX Sports AR)
+# v2.6.0 — daddy2.php now 403 (upstream daddylive change). Live streams now come
+#          from SportHD (streamxhd.com) via eventos.json: all active F1 servers
+#          (Disney+/FOX/DAZN) resolved dynamically. daddylive kept as directory source.
 CHANNELS_API = 'https://daddylive.mov/cache/channels.json'
 CHANNELS_REFERER = 'https://daddylive.mov/'
 
-# Direct stream resolution: fetch daddy2.php, extract base64 m3u8 from atob()
+# Legacy daddylive resolution (currently 403 upstream; kept for fallback)
 STREAM_PLAYER_URL = 'https://hamis.romponalis.st/premiumtv/daddy2.php?id={cid}'
 STREAM_PAGE_REFERER = 'https://dlstreams.st/stream/stream-{cid}.php'
 STREAM_M3U8_REFERER = 'https://hamis.romponalis.st/'
@@ -279,28 +282,61 @@ def resolve_sporthd_stream(stream_name):
 
 
 def get_sporthd_f1_streams():
-    """Return SportHD English/GB F1 backup streams (hardcoded channels)."""
-    # SportHD (streamxhd.com) carries these English/GB F1 channels.
-    # Each resolves via live1.php?stream=<name> → JS obfuscation → m3u8.
-    # The events API only lists channels during live races, so we hardcode them.
-    sporthd_channels = [
-        ('skysportsf1',        'Sky Sports F1 [GB]'),
-        ('daznf1',             'DAZN F1 [English]'),
-        ('skysportsmainevent', 'Sky Sports Main Event [GB]'),
+    """Return SportHD F1 streams from the live eventos.json API.
+
+    eventos.json lists today's events with active servers (Disney+, FOX, DAZN).
+    Falls back to hardcoded channels if the API is down.
+    """
+    import json as _json
+    known = [
+        ('daznf1', 'DAZN F1 [English]'),
+        ('disney1', 'Disney+ F1 [Spanish]'),
+        ('fox1ar', 'FOX Sports 1 AR [Spanish]'),
     ]
     channels = []
-    for stream_name, label in sporthd_channels:
-        stream_id = 'sporthd_%s' % stream_name
+    seen = set()
+    try:
+        req = urllib.request.Request(SPORTHD_EVENTS_API, headers={
+            'User-Agent': UA, 'Accept': 'application/json'})
+        with urllib.request.urlopen(req, timeout=15, context=_SSL_CTX) as resp:
+            data = _json.loads(resp.read().decode('utf-8', errors='replace'))
+        for ev in data:
+            if ev.get('code') != 'F1':
+                continue
+            for sv in ev.get('servers', []):
+                if not sv.get('active'):
+                    continue
+                slug = sv['url'].split('stream=')[-1]
+                if slug in seen:
+                    continue
+                seen.add(slug)
+                channels.append({
+                    'channel_id': 'sporthd_%s' % slug,
+                    'title': '%s — F1 %s' % (sv['name'], ev.get('title', '')),
+                    'league': 'SportHD F1',
+                    'event': sv['name'],
+                    'stream_label': sv['name'],
+                    'date': '', 'time': '',
+                    'iframe_url': '',
+                    'match_id': 'sporthd_%s' % slug,
+                    'league_logo': ev.get('image', ''),
+                })
+    except Exception as e:
+        log("SportHD eventos.json error: %s" % e)
+    # Fallback: hardcoded set for anything the API missed
+    for stream_name, label in known:
+        if stream_name in seen:
+            continue
+        seen.add(stream_name)
         channels.append({
-            'channel_id': stream_id,
+            'channel_id': 'sporthd_%s' % stream_name,
             'title': label,
             'league': 'SportHD F1',
             'event': '%s — SportHD Backup' % label,
             'stream_label': label,
-            'date': '',
-            'time': '',
+            'date': '', 'time': '',
             'iframe_url': '',
-            'match_id': stream_id,
+            'match_id': 'sporthd_%s' % stream_name,
             'league_logo': '',
         })
     return channels
@@ -437,8 +473,13 @@ def play_live_stream(channel_id):
         stream_url = resolve_sporthd_stream(stream_name)
         m3u8_referer = SPORTHD_M3U8_REFERER
     else:
+        # Legacy daddylive flow (currently 403 upstream) — try once, fall back to SportHD DAZN
         stream_url = resolve_live_stream(channel_id)
         m3u8_referer = STREAM_M3U8_REFERER
+        if not stream_url:
+            log("daddylive resolve failed for %s, falling back to SportHD daznf1" % channel_id)
+            stream_url = resolve_sporthd_stream('daznf1')
+            m3u8_referer = SPORTHD_M3U8_REFERER
 
     if not stream_url:
         xbmcgui.Dialog().notification(ADDON_NAME,
