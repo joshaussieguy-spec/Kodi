@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.7.1
+F1 Streams Kodi Addon v2.7.2
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -289,9 +289,11 @@ def play_live_stream(channel_id):
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
 
-    # dlive.sx resolver (v2.7.0) — Referer must be the dlive.sx stream page
+    # dlive.sx resolver (v2.7.2) — Referer must be the assetrage player origin:
+    # m3u8 loads with any/no Referer, but .ts SEGMENTS 403 unless
+    # Referer=https://assetrage.net/ (verified 2026-09-24).
     stream_url = resolve_live_stream(channel_id)
-    m3u8_referer = DLIVE_BASE + '/'
+    m3u8_referer = 'https://assetrage.net/'
 
     if not stream_url:
         xbmcgui.Dialog().notification(ADDON_NAME,

@@ -57,7 +57,7 @@
 </addon>
 <addon
     id="plugin.video.f1streams"
-    version="2.7.1"
+    version="2.7.2"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -80,7 +80,8 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, char-strip, slot reorder). English Sky F1 UK + DAZN F1 ES verified live. v2.7.0 - Lineup rebuilt: dlive.sx (current DaddyLive) now primary. Only 2 channels kept — Sky Sports F1 UK (English) + DAZN F1 ES (Spanish). Old daddylive channels.json + SportHD backups removed (dead upstream). v2.3.0 - Updated for daddylive.mov. v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
+        <news>v2.7.2 - Segment 403 fix: Referer must be assetrage.net
+v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, char-strip, slot reorder). English Sky F1 UK + DAZN F1 ES verified live. v2.7.0 - Lineup rebuilt: dlive.sx (current DaddyLive) now primary. Only 2 channels kept — Sky Sports F1 UK (English) + DAZN F1 ES (Spanish). Old daddylive channels.json + SportHD backups removed (dead upstream). v2.3.0 - Updated for daddylive.mov. v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
     </extension>
 </addon>
 <addon
