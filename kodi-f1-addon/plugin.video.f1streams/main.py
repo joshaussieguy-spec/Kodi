@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.7.0
+F1 Streams Kodi Addon v2.7.1
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -90,15 +90,15 @@ def filter_f1(matches):
 
 
 def _decode_econfig(blob):
-    """Decode dlive.sx window._econfig blob -> JSON config string.
+    """Decode assetrage.net window._econfig blob -> JSON config string.
 
-    Chain (reverse-engineered from player JS):
+    Chain (reverse-engineered from stream.js 0.0.26 _0x1b7ade):
       1. base64-decode blob -> string s
       2. split s into ceil(len/4)-sized quarters
-      3. strip the 3rd character (index 3) from each quarter
+      3. strip the char at index 3 from each quarter
       4. base64-decode each quarter (they were separately encoded)
-      5. reassemble in order [2, 0, 3, 1]
-      6. base64-decode the joined string -> JSON
+      5. slot assignment: quarter i goes to slot order[i] where order=[2,0,3,1]
+      6. concat slots in slot order 0..3, base64-decode the join -> JSON
     """
     import base64
     import math
@@ -113,8 +113,8 @@ def _decode_econfig(blob):
     order = [2, 0, 3, 1]
     slots = [None] * 4
     for i in range(4):
-        slots[order[i]] = base64.b64decode(pieces[i]).decode('latin-1')
-    return base64.b64decode(''.join(slots)).decode('utf-8', errors='replace')
+        slots[order[i]] = base64.b64decode(pieces[i] + '===').decode('latin-1')
+    return base64.b64decode(''.join(slots) + '===').decode('utf-8', errors='replace')
 
 
 def resolve_live_stream(channel_id):
