@@ -30,59 +30,19 @@ ADDON_HANDLE = int(sys.argv[1])
 ADDON_URL = sys.argv[0]
 
 # v2.5.0 — Added SportHD F1 backup streams (DAZN F1, Disney+, FOX Sports AR)
-# v2.6.0 — daddy2.php now 403 (upstream daddylive change). Live streams now come
-#          from SportHD (streamxhd.com) via eventos.json: all active F1 servers
-#          (Disney+/FOX/DAZN) resolved dynamically. daddylive kept as directory source.
-CHANNELS_API = 'https://daddylive.mov/cache/channels.json'
-CHANNELS_REFERER = 'https://daddylive.mov/'
+# v2.6.0 — daddy2.php now 403 (upstream daddylive change). SportHD fallback added.
+# v2.7.0 — daddylive.mov channels.json DEAD, streamxhd.com SportHD DEAD. New primary:
+#          dlive.sx (current DaddyLive). 24/7 channels at /watch.php?id=N.
+#          Only 2 channels kept (Josh's lineup): 60 Sky Sports F1 UK (English),
+#          537 DAZN F1 ES (Spanish). Resolver chain: watch.php -> iframe ->
+#          window._econfig blob -> decode -> stream_url_nop2p m3u8.
+CHANNELS = [
+    {'id': '60',  'title': 'Sky Sports F1 UK [English]'},
+    {'id': '537', 'title': 'DAZN F1 ES [Spanish]'},
+]
 
-# Legacy daddylive resolution (currently 403 upstream; kept for fallback)
-STREAM_PLAYER_URL = 'https://hamis.romponalis.st/premiumtv/daddy2.php?id={cid}'
-STREAM_PAGE_REFERER = 'https://dlstreams.st/stream/stream-{cid}.php'
-STREAM_M3U8_REFERER = 'https://hamis.romponalis.st/'
-
-# SportHD backup streams (streamxhd.com)
-SPORTHD_EVENTS_API = 'https://streamxhd.com/eventos.json'
-SPORTHD_LIVE_PAGE = 'https://streamxhd.com/live1.php?stream={stream}'
-SPORTHD_REFERER = 'https://streamxhd.com/'
-SPORTHD_M3U8_REFERER = 'https://streamxhd.com/'
-
+DLIVE_BASE = 'https://dlive.sx'
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-HEADERS = {
-    'User-Agent': UA,
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Referer': CHANNELS_REFERER,
-}
-
-MOTORSPORT_KEYWORDS = [
-    'grand prix', 'f1', 'formula 1', 'formula1', 'motorsport',
-    'motor sports', 'gp ', 'race', 'qualifying', 'practice', 'sprint',
-]
-
-# Pre-known F1/motorsport channel IDs from daddylive.mov channels.json
-# These are always available (24/7 channels), not just when races are live
-MOTORSPORT_CHANNEL_IDS = [
-    '60',    # Sky Sports F1 UK
-    '3007',  # Sky Sports F1 (alt)
-    '274',   # Sky Sports F1 DE
-    '577',   # Sky Sport F1 Italy
-    '537',   # DAZN F1 ES
-    '273',   # Canal+ Formula 1
-    '3030',  # DAZN MotoGP ES
-    '575',   # Sky Sport MotoGP Italy
-    '3046',  # Sky Sport MotoGP IT
-    '271',   # Canal+ MotoGP France
-    '554',   # Sky Sports Racing UK
-    '555',   # Racing Tv UK
-    '424',   # SuperSport Motorsport
-    '3037',  # Fox Sports Racing
-    '272',   # V Sport Motor Sweden
-    '702',   # TV4 Motor
-    '252',   # FloRacing
-    '5018',  # FloRacing II
-    '608',   # Dubai Racing 2 UAE
-]
 
 
 def log(msg):
@@ -93,23 +53,13 @@ def get_url(params):
     return "%s?%s" % (ADDON_URL, urllib.parse.urlencode(params))
 
 
-def fetch_json(url, timeout=15):
-    """Fetch JSON using urllib (no requests dependency)."""
-    try:
-        req = urllib.request.Request(url, headers=HEADERS)
-        with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as resp:
-            return json.loads(resp.read().decode('utf-8', errors='replace'))
-    except Exception as e:
-        log("JSON fetch error: %s" % e)
-        return None
-
-
-def fetch_page(url, headers=None, timeout=15):
+def fetch_page(url, headers=None, timeout=20):
     """Fetch HTML page using urllib."""
     try:
-        h = headers or EMBED_HEADERS
+        h = headers or {'User-Agent': UA, 'Referer': DLIVE_BASE + '/',
+                        'Accept': 'text/html,application/xhtml+xml,*/*'}
         req = urllib.request.Request(url, headers=h)
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as resp:
             return resp.read().decode('utf-8', errors='replace')
     except Exception as e:
         log("Page fetch error: %s" % e)
@@ -118,228 +68,108 @@ def fetch_page(url, headers=None, timeout=15):
 
 # ============ LIVE STREAM FUNCTIONS ============
 
-def get_motorsport_channels():
-    """Fetch all motorsport channels from daddylive.mov channels.json"""
-    data = fetch_json(CHANNELS_API)
-    if not data or not isinstance(data, list):
-        return []
-    channels = []
-    for item in data:
-        cid = (item.get('id') or '').strip()
-        title = (item.get('title') or '').strip()
-        if not cid or not title:
-            continue
-        title_lower = title.lower()
-        if any(kw in title_lower for kw in MOTORSPORT_KEYWORDS) or cid in MOTORSPORT_CHANNEL_IDS:
-            channels.append({
-                'channel_id': cid,
-                'title': title,
-                'league': 'Motorsport',
-                'event': title,
-                'stream_label': '',
-                'date': '',
-                'time': '',
-                'iframe_url': '',  # Not used anymore
-                'match_id': cid,
-                'league_logo': '',
-            })
-    return channels
+def get_live_channels():
+    """Static 2-channel lineup (v2.7.0): Sky F1 UK first, DAZN F1 ES second."""
+    return [{
+        'channel_id': ch['id'],
+        'title': ch['title'],
+        'league': 'F1 Live',
+        'event': ch['title'],
+        'stream_label': '',
+        'date': '',
+        'time': '',
+        'iframe_url': '',
+        'match_id': ch['id'],
+        'league_logo': '',
+    } for ch in CHANNELS]
 
 
 def filter_f1(matches):
-    """With the new channels.json approach, all matches are already F1/motorsport."""
+    """Lineup is fixed; nothing to filter."""
     return matches
 
 
-def resolve_live_stream(channel_id):
-    """Resolve a daddylive channel ID to an m3u8 URL via direct daddy2.php scraping.
-    
-    The old chat.cfbu247.sbs proxy API was returning 503. Instead we fetch
-    daddy2.php directly, which contains a Clappr player with a base64-encoded
-    m3u8 URL in atob('...'). The decoded URL is a direct HLS stream that
-    requires a Referer header from hamis.romponalis.st.
+def _decode_econfig(blob):
+    """Decode dlive.sx window._econfig blob -> JSON config string.
+
+    Chain (reverse-engineered from player JS):
+      1. base64-decode blob -> string s
+      2. split s into ceil(len/4)-sized quarters
+      3. strip the 3rd character (index 3) from each quarter
+      4. base64-decode each quarter (they were separately encoded)
+      5. reassemble in order [2, 0, 3, 1]
+      6. base64-decode the joined string -> JSON
     """
     import base64
+    import math
+    s = base64.b64decode(blob).decode('latin-1')
+    quarter = int(math.ceil(len(s) / 4.0))
+    pieces = []
+    pos = 0
+    for _ in range(4):
+        chunk = s[pos:pos + quarter]
+        pos += quarter
+        pieces.append(chunk[:3] + chunk[4:])
+    order = [2, 0, 3, 1]
+    slots = [None] * 4
+    for i in range(4):
+        slots[order[i]] = base64.b64decode(pieces[i]).decode('latin-1')
+    return base64.b64decode(''.join(slots)).decode('utf-8', errors='replace')
+
+
+def resolve_live_stream(channel_id):
+    """Resolve a dlive.sx 24/7 channel id (e.g. '60') to a playable m3u8 URL.
+
+    Chain: /watch.php?id=N -> page embeds /stream/stream-N.php in an iframe
+    -> that page embeds the player iframe -> window._econfig blob ->
+    _decode_econfig -> JSON with stream_url_nop2p (direct HLS, no p2p).
+    """
     if not channel_id:
         return None
     try:
-        player_url = STREAM_PLAYER_URL.format(cid=channel_id)
-        referer = STREAM_PAGE_REFERER.format(cid=channel_id)
-        req = urllib.request.Request(player_url, headers={
-            'User-Agent': UA,
-            'Referer': referer,
-            'Accept': 'text/html,application/xhtml+xml,*/*',
-        })
-        with urllib.request.urlopen(req, timeout=15, context=_SSL_CTX) as resp:
-            html = resp.read().decode('utf-8', errors='replace')
-        # Extract base64 from atob('...')
-        match = re.search(r"atob\('([A-Za-z0-9+/=]+)'\)", html)
-        if not match:
-            log("No atob() found in daddy2.php for channel %s" % channel_id)
+        # Step 1: watch.php page -> stream page iframe
+        watch_url = DLIVE_BASE + '/watch.php?id=' + channel_id
+        watch_html = fetch_page(watch_url)
+        if not watch_html:
+            log("watch.php fetch failed for %s" % channel_id)
             return None
-        m3u8_url = base64.b64decode(match.group(1)).decode('utf-8')
-        if m3u8_url.startswith('http'):
-            log("Resolved channel %s -> %s" % (channel_id, m3u8_url[:100]))
-            return m3u8_url
-        log("Decoded URL doesn't start with http: %s" % m3u8_url[:80])
-        return None
-    except Exception as e:
-        log("Stream resolve error (direct): %s" % e)
-        return None
+        iframe_m = re.search(r'<iframe[^>]+src="(https?://[^"]*stream-\d+\.php[^"]*)"', watch_html)
+        if not iframe_m:
+            log("No stream iframe in watch.php for %s" % channel_id)
+            return None
+        stream_page_url = iframe_m.group(1)
 
-
-def resolve_sporthd_stream(stream_name):
-    """Resolve a SportHD stream (streamxhd.com) to a playable m3u8 URL.
-
-    SportHD uses a JS obfuscation scheme: the page contains an array of
-    [index, base64_string] pairs and two functions that return numbers.
-    The decode: base64_decode(b64) -> extract digits -> parseInt - k,
-    where k = func1() + func2(). Each result is a char code that forms
-    the playback URL when joined.
-    """
-    import base64
-    if not stream_name:
-        return None
-    try:
-        page_url = SPORTHD_LIVE_PAGE.format(stream=stream_name)
-        req = urllib.request.Request(page_url, headers={
-            'User-Agent': UA,
-            'Referer': SPORTHD_REFERER,
-            'Accept': 'text/html,application/xhtml+xml,*/*',
-        })
-        with urllib.request.urlopen(req, timeout=15, context=_SSL_CTX) as resp:
-            html = resp.read().decode('utf-8', errors='replace')
-
-        # Find inline script with the playbackURL builder
-        scripts = re.findall(r'<script>(.+?)</script>', html, re.DOTALL)
-        for s in scripts:
-            if 'playbackURL' not in s:
-                continue
-
-            # Extract k = func1() + func2()
-            k_match = re.search(r'var k=(\w+)\(\)\+(\w+)\(\)', s)
-            if not k_match:
-                continue
-            f1_name, f2_name = k_match.group(1), k_match.group(2)
-            f1_ret = re.search(r'function ' + re.escape(f1_name) + r'\(\)\{return (\d+);', s)
-            f2_ret = re.search(r'function ' + re.escape(f2_name) + r'\(\)\{return (\d+);', s)
-            if not f1_ret or not f2_ret:
-                continue
-            k = int(f1_ret.group(1)) + int(f2_ret.group(1))
-
-            # Find the array var used in forEach that builds playbackURL
-            fe_match = re.search(r'(\w+)\.forEach\(e=>\{ let v=e\[1\]; playbackURL', s)
-            if not fe_match:
-                fe_match = re.search(r'(\w+)\.forEach\(e=>\{let v=e\[1\]; playbackURL', s)
-            if not fe_match:
-                continue
-            arr_var = fe_match.group(1)
-
-            # Get the data array (the one with [[ pairs)
-            arr_start = s.find(arr_var + '=[[')
-            if arr_start < 0:
-                continue
-            bracket_count = 0
-            arr_end = arr_start
-            for j in range(arr_start, len(s)):
-                if s[j] == '[':
-                    bracket_count += 1
-                elif s[j] == ']':
-                    bracket_count -= 1
-                    if bracket_count == 0:
-                        arr_end = j + 2
-                        break
-            arr_text = s[arr_start:arr_end]
-            pairs = re.findall(r'\[(\d+),"([^"]+)"\]', arr_text)
-            if not pairs:
-                continue
-
-            # Sort by index and decode
-            pairs_sorted = sorted(pairs, key=lambda x: int(x[0]))
-            decoded_chars = []
-            for _idx, b64_str in pairs_sorted:
-                try:
-                    decoded_b64 = base64.b64decode(b64_str).decode('utf-8', errors='ignore')
-                    digits = re.sub(r'\D', '', decoded_b64)
-                    if digits:
-                        char_code = int(digits) - k
-                        decoded_chars.append(chr(char_code))
-                except Exception:
-                    pass
-
-            playback_url = ''.join(decoded_chars)
-            if playback_url.startswith('http'):
-                log("SportHD resolved %s -> %s" % (stream_name, playback_url[:100]))
-                return playback_url
-            log("SportHD decode didn't produce URL: %s" % playback_url[:80])
+        # Step 2: stream page -> player iframe
+        page_html = fetch_page(stream_page_url)
+        if not page_html:
+            log("stream page fetch failed for %s" % channel_id)
+            return None
+        iframe_m = re.search(r'<iframe src="([^"]+)"', page_html)
+        if not iframe_m:
+            log("No iframe in stream page for %s" % channel_id)
             return None
 
-        log("No playbackURL script found in SportHD page for %s" % stream_name)
+        # Step 3: iframe -> _econfig blob
+        iframe_html = fetch_page(iframe_m.group(1))
+        if not iframe_html:
+            log("iframe fetch failed for %s" % channel_id)
+            return None
+        blob_m = re.search(r"window\._econfig='([^']+)'", iframe_html)
+        if not blob_m:
+            log("No _econfig in iframe for %s" % channel_id)
+            return None
+
+        # Step 4: decode -> JSON -> m3u8
+        cfg = json.loads(_decode_econfig(blob_m.group(1)))
+        stream_url = cfg.get('stream_url_nop2p') or cfg.get('stream_url')
+        if stream_url and stream_url.startswith('http'):
+            log("Resolved channel %s -> %s" % (channel_id, stream_url[:100]))
+            return stream_url
+        log("No stream_url in config for %s: keys=%s" % (channel_id, list(cfg.keys())))
         return None
     except Exception as e:
-        log("SportHD resolve error: %s" % e)
+        log("Stream resolve error (dlive.sx): %s" % e)
         return None
-
-
-def get_sporthd_f1_streams():
-    """Return SportHD F1 streams from the live eventos.json API.
-
-    eventos.json lists today's events with active servers (Disney+, FOX, DAZN).
-    Falls back to hardcoded channels if the API is down.
-    """
-    import json as _json
-    known = [
-        ('daznf1', 'DAZN F1 [English]'),
-        ('disney1', 'Disney+ F1 [Spanish]'),
-        ('fox1ar', 'FOX Sports 1 AR [Spanish]'),
-    ]
-    channels = []
-    seen = set()
-    try:
-        req = urllib.request.Request(SPORTHD_EVENTS_API, headers={
-            'User-Agent': UA, 'Accept': 'application/json'})
-        with urllib.request.urlopen(req, timeout=15, context=_SSL_CTX) as resp:
-            data = _json.loads(resp.read().decode('utf-8', errors='replace'))
-        for ev in data:
-            if ev.get('code') != 'F1':
-                continue
-            for sv in ev.get('servers', []):
-                if not sv.get('active'):
-                    continue
-                slug = sv['url'].split('stream=')[-1]
-                if slug in seen:
-                    continue
-                seen.add(slug)
-                channels.append({
-                    'channel_id': 'sporthd_%s' % slug,
-                    'title': '%s — F1 %s' % (sv['name'], ev.get('title', '')),
-                    'league': 'SportHD F1',
-                    'event': sv['name'],
-                    'stream_label': sv['name'],
-                    'date': '', 'time': '',
-                    'iframe_url': '',
-                    'match_id': 'sporthd_%s' % slug,
-                    'league_logo': ev.get('image', ''),
-                })
-    except Exception as e:
-        log("SportHD eventos.json error: %s" % e)
-    # Fallback: hardcoded set for anything the API missed
-    for stream_name, label in known:
-        if stream_name in seen:
-            continue
-        seen.add(stream_name)
-        channels.append({
-            'channel_id': 'sporthd_%s' % stream_name,
-            'title': label,
-            'league': 'SportHD F1',
-            'event': '%s — SportHD Backup' % label,
-            'stream_label': label,
-            'date': '', 'time': '',
-            'iframe_url': '',
-            'match_id': 'sporthd_%s' % stream_name,
-            'league_logo': '',
-        })
-    return channels
 
 
 # ============ UI FUNCTIONS ============
@@ -436,25 +266,17 @@ def show_matches(matches, content_type='videos'):
 
 
 def show_f1_streams():
-    channels = get_motorsport_channels()
-    # Append SportHD backup F1 streams
-    try:
-        sporthd = get_sporthd_f1_streams()
-        if sporthd:
-            channels.extend(sporthd)
-            log("Added %d SportHD F1 backup streams" % len(sporthd))
-    except Exception as e:
-        log("SportHD fetch error: %s" % e)
+    channels = get_live_channels()
     show_matches(channels)
 
 
 def search_events():
-    keyboard = xbmc.Keyboard('', 'Search motorsport channels...')
+    keyboard = xbmc.Keyboard('', 'Search channels...')
     keyboard.doModal()
     if keyboard.isConfirmed():
         query = keyboard.getText().lower().strip()
         if query:
-            channels = get_motorsport_channels()
+            channels = get_live_channels()
             filtered = [c for c in channels
                         if query in c['title'].lower()]
             show_matches(filtered)
@@ -467,19 +289,9 @@ def play_live_stream(channel_id):
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
 
-    # Route SportHD streams to SportHD resolver
-    if channel_id.startswith('sporthd_'):
-        stream_name = channel_id[len('sporthd_'):]
-        stream_url = resolve_sporthd_stream(stream_name)
-        m3u8_referer = SPORTHD_M3U8_REFERER
-    else:
-        # Legacy daddylive flow (currently 403 upstream) — try once, fall back to SportHD DAZN
-        stream_url = resolve_live_stream(channel_id)
-        m3u8_referer = STREAM_M3U8_REFERER
-        if not stream_url:
-            log("daddylive resolve failed for %s, falling back to SportHD daznf1" % channel_id)
-            stream_url = resolve_sporthd_stream('daznf1')
-            m3u8_referer = SPORTHD_M3U8_REFERER
+    # dlive.sx resolver (v2.7.0) — Referer must be the dlive.sx stream page
+    stream_url = resolve_live_stream(channel_id)
+    m3u8_referer = DLIVE_BASE + '/'
 
     if not stream_url:
         xbmcgui.Dialog().notification(ADDON_NAME,
