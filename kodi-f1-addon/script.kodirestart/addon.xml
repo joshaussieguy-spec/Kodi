@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+    id="script.kodirestart"
+    version="1.0.0"
+    name="Restart Kodi"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.script" library="main.py"/>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Restart Kodi</summary>
+        <description lang="en">Restarts Kodi via XBMC.RestartApp. Useful on setups (Windows Store installs) where the power menu has no restart option.</description>
+        <icon>resources/icon.png</icon>
+    </extension>
+</addon>

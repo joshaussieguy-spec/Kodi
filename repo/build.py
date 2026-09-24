@@ -31,6 +31,7 @@ ADDON_DIRS = [
     "kodi-afl-addon/plugin.video.aflstreams",
     "kodi-arabic-addon/plugin.video.arabicshows",
     "kodi-f1-addon/plugin.video.f1streams",
+    "kodi-f1-addon/script.kodirestart",
     REPO_ADDON_DIR,
 ]
 
