@@ -1,7 +1,7 @@
 """
-F1 Streams Kodi Addon v2.1.0
+F1 Streams Kodi Addon v2.7.0
 Zero external dependencies — uses only Python builtins.
-Live streams from daddylive + race replays from fullraces.com.
+Live streams from dlive.sx + race replays from fullraces.com.
 """
 
 import sys
