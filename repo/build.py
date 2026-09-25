@@ -144,6 +144,34 @@ def main():
             if p not in keep:
                 os.remove(p)
 
+    # Directory index.html files: GitHub Pages (and any static host) doesn't
+    # generate listings, but Kodi's file browser parses HTML indexes when
+    # browsing a source URL. Generate one per zips/<id>/ dir + the zips root.
+    import html as _html
+    from urllib.parse import quote as _urlquote
+
+    def write_index(dir_path):
+        items = sorted(
+            fn + ("/" if os.path.isdir(os.path.join(dir_path, fn)) else "")
+            for fn in os.listdir(dir_path)
+            if not fn.startswith(".") and (
+                os.path.isdir(os.path.join(dir_path, fn)) or fn.endswith(".zip")
+            )
+        )
+        rows = "\n".join(
+            f'<a href="{_urlquote(rel)}">{_html.escape(rel)}</a>' for rel in items
+        )
+        page = f"<!DOCTYPE html><html><head><meta charset='utf-8'><title>index</title></head><body>\n{rows}\n</body></html>\n"
+        with open(os.path.join(dir_path, "index.html"), "w", encoding="utf-8") as f:
+            f.write(page)
+
+    if os.path.isdir(ZIPS_DIR):
+        write_index(ZIPS_DIR)
+        for addon_id in os.listdir(ZIPS_DIR):
+            sub = os.path.join(ZIPS_DIR, addon_id)
+            if os.path.isdir(sub):
+                write_index(sub)
+
     print("Built:")
     print("  repo/addons.xml + addons.xml.md5")
     for p in built:
