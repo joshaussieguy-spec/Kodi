@@ -10,9 +10,9 @@
     </requires>
     <extension point="xbmc.addon.repository" name="thetallone">
         <dir>
-            <info compressed="false">https://raw.githubusercontent.com/joshaussieguy-spec/Kodi/main/repo/addons.xml</info>
-            <checksum>https://raw.githubusercontent.com/joshaussieguy-spec/Kodi/main/repo/addons.xml.md5</checksum>
-            <datadir zip="true">https://raw.githubusercontent.com/joshaussieguy-spec/Kodi/main/repo/zips/</datadir>
+            <info compressed="false">https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/addons.xml</info>
+            <checksum>https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/addons.xml.md5.txt</checksum>
+            <datadir zip="true">https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/zips/</datadir>
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">

@@ -126,7 +126,11 @@ def main():
     with open(os.path.join(REPO_DIR, "addons.xml"), "w", encoding="utf-8", newline="\n") as f:
         f.write(addons_xml)
     md5 = hashlib.md5(addons_xml.encode("utf-8")).hexdigest()
+    # .md5 twin: jsdelivr blocks bare .md5 (403) — a .md5.txt twin keeps the
+    # repo installable over the CDN mirror (raw.githubusercontent fallback).
     with open(os.path.join(REPO_DIR, "addons.xml.md5"), "w") as f:
+        f.write(md5)
+    with open(os.path.join(REPO_DIR, "addons.xml.md5.txt"), "w") as f:
         f.write(md5)
 
     # Only remove stale-version ZIP files that no longer belong
