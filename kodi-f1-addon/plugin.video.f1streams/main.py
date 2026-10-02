@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.8.0
+F1 Streams Kodi Addon v2.8.1
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -14,7 +14,13 @@ import zlib
 import base64
 import threading
 import socket
+import time
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
+try:
+    from http.server import ThreadingHTTPServer   # Python 3.7+
+except ImportError:
+    ThreadingHTTPServer = HTTPServer
 import urllib.parse
 import urllib.request
 import xbmcaddon
@@ -185,7 +191,12 @@ def resolve_live_stream(channel_id):
             return None
         proxy = get_unwrap_proxy()
         port = proxy.start() if not proxy.server else proxy.PORT
-        proxy.load_manifest(upstream_m3u8, seg_urls, seg_headers)
+        proxy.load_manifest(upstream_m3u8, man, seg_headers)
+        # dedicated refresher: polls upstream so the window keeps rolling
+        if not proxy.refresher_thread or not proxy.refresher_thread.is_alive():
+            proxy.refresher_thread = threading.Thread(
+                target=proxy._refresh_loop, daemon=True)
+            proxy.refresher_thread.start()
         local_url = 'http://127.0.0.1:%d/stream.m3u8' % port
         log("Resolved channel %s via unwrap proxy: %s (%s, %d segs)"
             % (channel_id, local_url, upstream_m3u8[:60], len(seg_urls)))
@@ -286,6 +297,8 @@ def _unwrap_png_segment(png_bytes):
 
 
 class _UnwrapProxyHandler(BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'   # keep-alive: fewer connect stalls in Kodi
+
     def do_GET(self):
         proxy = self.server.proxy
         if self.path.startswith('/stream.m3u8'):
@@ -297,7 +310,13 @@ class _UnwrapProxyHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
         elif self.path.startswith('/seg/'):
-            idx = int(self.path[5:].split('.')[0])
+            try:
+                idx = int(self.path[5:].split('.')[0])
+            except (ValueError, IndexError):
+                idx = -1
+            if idx < 0:
+                self.send_response(404); self.send_header('Content-Length', '0'); self.end_headers(); return
+            proxy.note_request(idx)
             # fetch_segment already pixel-unwraps; it returns plain MPEG-TS
             ts = proxy.fetch_segment(idx)
             if ts is None:
@@ -322,39 +341,67 @@ class _UnwrapProxyHandler(BaseHTTPRequestHandler):
 class UnwrapProxy:
     """Local HTTP server that serves an unwrapped (de-cloaked) HLS stream.
 
-    Kodi fetches http://127.0.0.1:<port>/stream.m3u8 (clean m3u8 whose
-    segments point at /seg/<n>.ts). Each segment request triggers an upstream
-    fetch of the PNG-cloaked segment, pixel-unwraps the gzip'd TS payload,
-    and serves plain MPEG-TS to Kodi's ffmpeg player.
+    Kodi fetches http://127.0.0.1:<port>/stream.m3u8 — a sliding-window live
+    playlist (EXT-X-MEDIA-SEQUENCE) whose segment URLs are /seg/<n>.ts with n
+    on an ABSOLUTE ledger: indices never shift when the window advances.
+    Each segment request hits the cache or fetches the PNG-cloaked upstream
+    segment, pixel-unwraps the gzip'd TS, and serves plain MPEG-TS to Kodi's
+    ffmpeg player.
+
+    v2.8.1 crash fix (Sky + DAZN both stalled ~15-20s into playback): the old
+    proxy re-polled upstream SYNCHRONOUSLY inside Kodi's playlist request and
+    keyed segments by position in a fixed list, so when upstream rotated its
+    URLs the next playlist read either blocked (decoder stall) or 502'd
+    (playback end). Now:
+      - a dedicated refresher thread polls upstream and appends newly-seen
+        segment URLs to an append-only ledger (dedup by URL); playlist
+        requests NEVER touch the network
+      - EXT-X-MEDIA-SEQUENCE = first ledger index → ffmpeg treats the
+        playlist as a proper live sliding window
+      - EXTINF/TARGETDURATION passed through from upstream (no fake 6.0)
+      - prefetch thread unwraps the next segments before Kodi asks
+      - ThreadingHTTPServer: playlist + segment requests never queue on a
+        single accept loop
     """
 
     PORT = 8776
+    WINDOW = 4            # target playlist window size (segments)
+    MAX_HOLD = 48         # max ledger length before front-trim
+    POLL_MIN = 2.5        # seconds between upstream manifest polls
+    PREFETCH_AHEAD = 2    # unwrap this many segments before Kodi needs them
 
     def __init__(self):
         self.server = None
         self.thread = None
-        # Keep only recent segments — Kodi reads sequentially, so an unbounded
-        # cache would grow to GBs on a 3h race. Window of 12 covers seeks.
-        self.CACHE_WINDOW = 12
-        self.cache = {}
+        self._lock = threading.Lock()
         self.upstream_m3u8 = None
-        self.seg_urls = []
+        self.ledger = []             # [(abs_idx, url, dur)] append-only
+        self._seen = set()           # dedup upstream URLs
+        self.media_seq = 0           # abs_idx of ledger[0]
         self.seg_headers = {}
-        self.manifest = ''
-        self._cache_put_lock = threading.Lock()
+        self.last_poll = 0.0
+        self.poll_failures = 0
+        self.prefetch_event = threading.Event()
+        self.prefetch_thread = None
+        self.refresher_thread = None
+        self.cache = {}              # abs_idx -> unwrapped TS bytes
+        self.max_served = -1
+        self._cache_lock = threading.Lock()
 
     def _cache_put(self, idx, ts):
-        with self._cache_put_lock:
+        with self._cache_lock:
             self.cache[idx] = ts
-            if len(self.cache) > self.CACHE_WINDOW:
-                oldest = sorted(self.cache)[:-self.CACHE_WINDOW]
-                for k in oldest:
+            if len(self.cache) > 3 * self.WINDOW:
+                floor = self.media_seq + len(self.ledger) - 6
+                for k in [i for i in self.cache if i < floor]:
                     del self.cache[k]
 
     def start(self):
         try:
-            self.server = HTTPServer(('127.0.0.1', 0), _UnwrapProxyHandler)
+            cls = ThreadingHTTPServer if ThreadingHTTPServer else HTTPServer
+            self.server = cls(('127.0.0.1', 0), _UnwrapProxyHandler)
             self.server.proxy = self
+            self.server.daemon_threads = True
             self.PORT = self.server.server_address[1]
             self.thread = threading.Thread(target=self.server.serve_forever,
                                            kwargs={'poll_interval': 0.2})
@@ -362,67 +409,155 @@ class UnwrapProxy:
             self.thread.start()
             log("Unwrap proxy listening on 127.0.0.1:%d" % self.PORT)
         except OSError:
-            # port already bound (previous playback) — reuse it
+            # previous playback still holds the port — reuse it
             self.server = 'reused'
             log("Unwrap proxy already running on 127.0.0.1:%d" % self.PORT)
         return self.PORT
 
-    def load_manifest(self, upstream_m3u8, seg_urls, seg_headers):
-        self.upstream_m3u8 = upstream_m3u8
-        self.seg_urls = seg_urls
-        self.seg_headers = seg_headers
-        self.cache = {}
-        parts = ['#EXTM3U', '#EXT-X-VERSION:3',
-                 '#EXT-X-TARGETDURATION:6']
-        for i, _u in enumerate(seg_urls):
-            parts.append('#EXTINF:6.0,')
-            parts.append('/seg/%d.ts' % i)
-        self.manifest = '\n'.join(parts) + '\n'
+    @staticmethod
+    def _parse_playlist(text):
+        """Extract (url, EXTINF-duration) pairs from an m3u8 playlist."""
+        urls, durs, pending = [], [], None
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith('#EXTINF:'):
+                try:
+                    pending = float(line[8:].split(',')[0])
+                except (ValueError, IndexError):
+                    pending = None
+            elif line and not line.startswith('#'):
+                urls.append(line)
+                durs.append(pending if pending is not None else 6.0)
+                pending = None
+        return urls, durs
+
+    def _absorb(self, urls, durs):
+        """Append newly-seen upstream segments to the absolute ledger."""
+        for u, d in zip(urls, durs):
+            if u not in self._seen:
+                self._seen.add(u)
+                abs_idx = self.media_seq + len(self.ledger)
+                self.ledger.append((abs_idx, u, d))
+
+    def load_manifest(self, upstream_m3u8, manifest_text, seg_headers):
+        urls, durs = self._parse_playlist(manifest_text)
+        with self._lock:
+            self.upstream_m3u8 = upstream_m3u8
+            self.seg_headers = dict(seg_headers)
+            self.ledger = []
+            self._seen = set()
+            self.media_seq = 0
+            self.cache = {}
+            self.max_served = -1
+            self.last_poll = time.time()
+            self.poll_failures = 0
+            self._absorb(urls, durs)
+        self.prefetch_event.set()
+        if not self.prefetch_thread or not self.prefetch_thread.is_alive():
+            self.prefetch_thread = threading.Thread(
+                target=self._prefetch_loop, daemon=True)
+            self.prefetch_thread.start()
+
+    def _poll_upstream(self):
+        """Poll upstream manifest; absorb new segments, trim the front."""
+        with self._lock:
+            up, hdrs = self.upstream_m3u8, dict(self.seg_headers)
+        try:
+            req = urllib.request.Request(up, headers=hdrs)
+            with urllib.request.urlopen(req, timeout=10,
+                                        context=_SSL_CTX) as resp:
+                man = resp.read().decode('utf-8', errors='replace')
+        except Exception as e:
+            self.poll_failures += 1
+            log("Manifest poll error #%d: %s" % (self.poll_failures, e))
+            return
+        urls, durs = self._parse_playlist(man)
+        with self._lock:
+            self._absorb(urls, durs)
+            self.poll_failures = 0
+            if len(self.ledger) > self.MAX_HOLD:
+                drop = len(self.ledger) - self.MAX_HOLD
+                self.ledger = self.ledger[drop:]
+                self.media_seq += drop
+            self.prefetch_event.set()
 
     def refresh_manifest(self):
-        """Re-poll upstream playlist so a live stream keeps rolling.
+        """Build the current sliding-window playlist. Never blocks on net."""
+        with self._lock:
+            snapshot = list(self.ledger)
+        if not snapshot:
+            return '#EXTM3U\n'
+        window = snapshot[-self.WINDOW:]   # tail only: start near-live
+        target = max(d for _i, _u, d in window)
+        lines = ['#EXTM3U', '#EXT-X-VERSION:3',
+                 '#EXT-X-TARGETDURATION:%d' % int(target + 0.999),
+                 '#EXT-X-MEDIA-SEQUENCE:%d' % window[0][0],
+                 '#EXT-X-DISCONTINUITY-SEQUENCE:0']
+        for i, _u, d in window:
+            lines.append('#EXTINF:%.3f,' % d)
+            lines.append('/seg/%d.ts' % i)
+        return '\n'.join(lines) + '\n'
 
-        Keeps the last 2 segment URLs if the poll fails (segments rotate
-        every ~30s upstream, so stale URLs 404 anyway — Kodi will retry).
-        """
-        try:
-            req = urllib.request.Request(self.upstream_m3u8, headers=self.seg_headers)
-            with urllib.request.urlopen(req, timeout=10, context=_SSL_CTX) as resp:
-                man = resp.read().decode('utf-8', errors='replace')
-            if '#EXTM3U' in man:
-                seg_urls = [l.strip() for l in man.splitlines()
-                            if l.strip() and not l.startswith('#')]
-                if seg_urls:
-                    self.seg_urls = seg_urls
-                    parts = ['#EXTM3U', '#EXT-X-VERSION:3',
-                             '#EXT-X-TARGETDURATION:6']
-                    for i, _u in enumerate(seg_urls):
-                        parts.append('#EXTINF:6.0,')
-                        parts.append('/seg/%d.ts' % i)
-                    self.manifest = '\n'.join(parts) + '\n'
-        except Exception as e:
-            log("Manifest refresh error: %s" % e)
-        return self.manifest
+    def note_request(self, idx):
+        with self._lock:
+            if idx > self.max_served:
+                self.max_served = idx
+        self.prefetch_event.set()
 
-    def fetch_segment(self, idx):
-        if idx in self.cache:
-            return self.cache[idx]
-        if idx >= len(self.seg_urls):
-            return None
-        url = self.seg_urls[idx]
+    def _fetch_unwrap(self, url):
         if not url.startswith('http'):
             url = urllib.parse.urljoin(self.upstream_m3u8, url)
         try:
             req = urllib.request.Request(url, headers=self.seg_headers)
-            with urllib.request.urlopen(req, timeout=20, context=_SSL_CTX) as resp:
+            with urllib.request.urlopen(req, timeout=20,
+                                        context=_SSL_CTX) as resp:
                 png = resp.read()
-            ts = _unwrap_png_segment(png)
-            if ts is not None:
-                self._cache_put(idx, ts)
-            return ts
+            return _unwrap_png_segment(png)
         except Exception as e:
-            log("Segment %d fetch error: %s" % (idx, e))
+            log("Segment fetch error: %s" % e)
             return None
+
+    def fetch_segment(self, idx):
+        if idx in self.cache:
+            return self.cache[idx]
+        with self._lock:
+            url = None
+            for i, u, _d in self.ledger:
+                if i == idx:
+                    url = u
+                    break
+        if url is None:
+            return None
+        ts = self._fetch_unwrap(url)
+        if ts is not None:
+            self._cache_put(idx, ts)
+        else:
+            log("Segment %d unwrap failed" % idx)
+        return ts
+
+    def _refresh_loop(self):
+        self.poll_failures = 0
+        while True:
+            if self.upstream_m3u8:
+                self._poll_upstream()
+            gap = self.POLL_MIN * (3 if self.poll_failures > 2 else 1)
+            time.sleep(gap)
+
+    def _prefetch_loop(self):
+        while True:
+            self.prefetch_event.wait(timeout=1.5)
+            self.prefetch_event.clear()
+            with self._lock:
+                targets = [(i, u) for i, u, _d in self.ledger
+                           if self.max_served <= i
+                           <= self.max_served + self.PREFETCH_AHEAD
+                           and i not in self.cache]
+            for i, u in targets:
+                if i in self.cache:
+                    continue
+                ts = self._fetch_unwrap(u)
+                if ts is not None:
+                    self._cache_put(i, ts)
 
 
 def get_unwrap_proxy():
