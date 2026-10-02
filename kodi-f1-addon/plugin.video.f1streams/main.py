@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.7.2
+F1 Streams Kodi Addon v2.8.0
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -8,6 +8,13 @@ import sys
 import re
 import json
 import ssl
+import struct
+import gzip
+import zlib
+import base64
+import threading
+import socket
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import urllib.request
 import xbmcaddon
@@ -115,14 +122,14 @@ def _decode_econfig(blob):
     for i in range(4):
         slots[order[i]] = base64.b64decode(pieces[i] + '===').decode('latin-1')
     return base64.b64decode(''.join(slots) + '===').decode('utf-8', errors='replace')
-
-
 def resolve_live_stream(channel_id):
     """Resolve a dlive.sx 24/7 channel id (e.g. '60') to a playable m3u8 URL.
 
-    Chain: /watch.php?id=N -> page embeds /stream/stream-N.php in an iframe
-    -> that page embeds the player iframe -> window._econfig blob ->
-    _decode_econfig -> JSON with stream_url_nop2p (direct HLS, no p2p).
+    Chain (v2.8.0): /watch.php?id=N -> /stream/stream-N.php iframe ->
+    daddyliveplayer.st player iframe -> const SRC = ".../index.m3u8".
+    Segments are PNG-stego cloaked (gzip'd TS hidden in RGB pixel data,
+    'TIKTIKPX' magic), so the manifest is re-served through a local unwrap
+    proxy and Kodi plays http://127.0.0.1:<port>/stream.m3u8.
     """
     if not channel_id:
         return None
@@ -149,27 +156,283 @@ def resolve_live_stream(channel_id):
             log("No iframe in stream page for %s" % channel_id)
             return None
 
-        # Step 3: iframe -> _econfig blob
-        iframe_html = fetch_page(iframe_m.group(1))
-        if not iframe_html:
-            log("iframe fetch failed for %s" % channel_id)
+        # Step 3: player page -> const SRC (v2.8.0; old _econfig blob is gone)
+        player_url = iframe_m.group(1)
+        if player_url.startswith('//'):
+            player_url = 'https:' + player_url
+        player_html = fetch_page(player_url)
+        if not player_html:
+            log("player page fetch failed for %s" % channel_id)
             return None
-        blob_m = re.search(r"window\._econfig='([^']+)'", iframe_html)
-        if not blob_m:
-            log("No _econfig in iframe for %s" % channel_id)
+        src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
+        if not src_m:
+            log("No const SRC in player page for %s" % channel_id)
             return None
+        upstream_m3u8 = src_m.group(1)
+        origin = urllib.parse.urlparse(player_url)
+        player_origin = origin.scheme + '://' + origin.netloc + '/'
 
-        # Step 4: decode -> JSON -> m3u8
-        cfg = json.loads(_decode_econfig(blob_m.group(1)))
-        stream_url = cfg.get('stream_url_nop2p') or cfg.get('stream_url')
-        if stream_url and stream_url.startswith('http'):
-            log("Resolved channel %s -> %s" % (channel_id, stream_url[:100]))
-            return stream_url
-        log("No stream_url in config for %s: keys=%s" % (channel_id, list(cfg.keys())))
-        return None
+        # Step 4: fetch upstream manifest, hand it to the unwrap proxy
+        seg_headers = {'User-Agent': UA, 'Referer': player_origin}
+        man = fetch_page(upstream_m3u8, seg_headers, 15)
+        if not man or '#EXTM3U' not in man:
+            log("Upstream manifest fetch failed for %s" % channel_id)
+            return None
+        seg_urls = [l.strip() for l in man.splitlines()
+                    if l.strip() and not l.startswith('#')]
+        if not seg_urls:
+            log("Manifest has no segments for %s" % channel_id)
+            return None
+        proxy = get_unwrap_proxy()
+        port = proxy.start() if not proxy.server else proxy.PORT
+        proxy.load_manifest(upstream_m3u8, seg_urls, seg_headers)
+        local_url = 'http://127.0.0.1:%d/stream.m3u8' % port
+        log("Resolved channel %s via unwrap proxy: %s (%s, %d segs)"
+            % (channel_id, local_url, upstream_m3u8[:60], len(seg_urls)))
+        return local_url
     except Exception as e:
         log("Stream resolve error (dlive.sx): %s" % e)
         return None
+# ============ PNG-STEGO UNWRAP PROXY ============
+
+_STEGO_MAGIC = b'TIKTIKPX'
+_MAGIC_PREAMBLE = 4          # TIKTIKPX + 4 junk bytes before gzip
+_TS_PACKET = 188
+
+
+def _png_unfilter(raw, w, h, bpp, stride):
+    """Undo PNG per-scanline filtering in pure Python."""
+    out = bytearray()
+    prev = bytearray(stride)
+    i = 0
+    n = len(raw)
+    while i < n:
+        f = raw[i]
+        i += 1
+        line = bytearray(raw[i:i + stride])
+        i += stride
+        if f == 1:  # Sub
+            for x in range(bpp, stride):
+                line[x] = (line[x] + line[x - bpp]) % 256
+        elif f == 2:  # Up
+            for x in range(stride):
+                line[x] = (line[x] + prev[x]) % 256
+        elif f == 3:  # Average
+            for x in range(stride):
+                a = line[x - bpp] if x >= bpp else 0
+                line[x] = (line[x] + ((a + prev[x]) >> 1)) % 256
+        elif f == 4:  # Paeth
+            for x in range(stride):
+                a = line[x - bpp] if x >= bpp else 0
+                b = prev[x]
+                c = prev[x - bpp] if x >= bpp else 0
+                p = a + b - c
+                pa, pb, pc = abs(p - a), abs(p - b), abs(p - c)
+                pr = a if (pa <= pb and pa <= pc) else (b if pb <= pc else c)
+                line[x] = (line[x] + pr) % 256
+        out += line
+        prev = line
+    return bytes(out)
+
+
+def _unwrap_png_segment(png_bytes):
+    """Extract gzip'd MPEG-TS hidden in PNG RGB pixel data.
+
+    Layout (reverse-engineered 2026-09-26):
+      PNG (512xN RGB) -> unfilter -> pixel bytes start with 'TIKTIKPX'
+      + 4 junk bytes -> gzip stream -> raw MPEG-TS.
+    """
+    if png_bytes[:8] != b'\x89PNG\r\n\x1a\n':
+        return None
+    pos = 8
+    idat = b''
+    while pos < len(png_bytes):
+        ln = struct.unpack('>I', png_bytes[pos:pos + 4])[0]
+        typ = png_bytes[pos + 4:pos + 8]
+        data = png_bytes[pos + 8:pos + 8 + ln]
+        if typ == b'IHDR':
+            w, h, _bd, ct = struct.unpack('>IIBB', data[:10])
+        elif typ == b'IDAT':
+            idat += data
+        elif typ == b'IEND':
+            break
+        pos += 12 + ln
+    try:
+        raw = zlib.decompress(idat)
+    except Exception:
+        return None
+    try:
+        bpp = {0: 1, 2: 3, 4: 2, 6: 4}[ct]
+    except KeyError:
+        return None
+    # 8-bit depths only: each filtered row = 1 filter byte + w*bpp bytes.
+    # (The (bits+7)//8 packing formula would be wrong here — verified
+    # 2026-09-26: raw length == (w*bpp + 1) * h exactly.)
+    stride = w * bpp
+    if len(raw) < (stride + 1) * h:
+        return None
+    pixels = _png_unfilter(raw, w, h, bpp, stride)
+    mi = pixels.find(_STEGO_MAGIC)
+    if mi < 0:
+        return None
+    gz = pixels[mi + len(_STEGO_MAGIC) + _MAGIC_PREAMBLE:]
+    try:
+        # wbits=31 = gzip member; stops cleanly at member end and ignores
+        # trailing pixel bytes (segments are bigger than their payload).
+        d = zlib.decompressobj(31)
+        return d.decompress(gz)
+    except Exception:
+        return None
+
+
+class _UnwrapProxyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        proxy = self.server.proxy
+        if self.path.startswith('/stream.m3u8'):
+            # live: re-poll upstream each time Kodi re-fetches the playlist
+            body = proxy.refresh_manifest().encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/vnd.apple.mpegurl')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path.startswith('/seg/'):
+            idx = int(self.path[5:].split('.')[0])
+            # fetch_segment already pixel-unwraps; it returns plain MPEG-TS
+            ts = proxy.fetch_segment(idx)
+            if ts is None:
+                self.send_response(502)
+                self.send_header('Content-Length', '0')
+                self.end_headers()
+                return
+            self.send_response(200)
+            self.send_header('Content-Type', 'video/mp2t')
+            self.send_header('Content-Length', str(len(ts)))
+            self.end_headers()
+            self.wfile.write(ts)
+        else:
+            self.send_response(404)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+
+    def log_message(self, *a):
+        pass
+
+
+class UnwrapProxy:
+    """Local HTTP server that serves an unwrapped (de-cloaked) HLS stream.
+
+    Kodi fetches http://127.0.0.1:<port>/stream.m3u8 (clean m3u8 whose
+    segments point at /seg/<n>.ts). Each segment request triggers an upstream
+    fetch of the PNG-cloaked segment, pixel-unwraps the gzip'd TS payload,
+    and serves plain MPEG-TS to Kodi's ffmpeg player.
+    """
+
+    PORT = 8776
+
+    def __init__(self):
+        self.server = None
+        self.thread = None
+        # Keep only recent segments — Kodi reads sequentially, so an unbounded
+        # cache would grow to GBs on a 3h race. Window of 12 covers seeks.
+        self.CACHE_WINDOW = 12
+        self.cache = {}
+        self.upstream_m3u8 = None
+        self.seg_urls = []
+        self.seg_headers = {}
+        self.manifest = ''
+        self._cache_put_lock = threading.Lock()
+
+    def _cache_put(self, idx, ts):
+        with self._cache_put_lock:
+            self.cache[idx] = ts
+            if len(self.cache) > self.CACHE_WINDOW:
+                oldest = sorted(self.cache)[:-self.CACHE_WINDOW]
+                for k in oldest:
+                    del self.cache[k]
+
+    def start(self):
+        try:
+            self.server = HTTPServer(('127.0.0.1', 0), _UnwrapProxyHandler)
+            self.server.proxy = self
+            self.PORT = self.server.server_address[1]
+            self.thread = threading.Thread(target=self.server.serve_forever,
+                                           kwargs={'poll_interval': 0.2})
+            self.thread.daemon = True
+            self.thread.start()
+            log("Unwrap proxy listening on 127.0.0.1:%d" % self.PORT)
+        except OSError:
+            # port already bound (previous playback) — reuse it
+            self.server = 'reused'
+            log("Unwrap proxy already running on 127.0.0.1:%d" % self.PORT)
+        return self.PORT
+
+    def load_manifest(self, upstream_m3u8, seg_urls, seg_headers):
+        self.upstream_m3u8 = upstream_m3u8
+        self.seg_urls = seg_urls
+        self.seg_headers = seg_headers
+        self.cache = {}
+        parts = ['#EXTM3U', '#EXT-X-VERSION:3',
+                 '#EXT-X-TARGETDURATION:6']
+        for i, _u in enumerate(seg_urls):
+            parts.append('#EXTINF:6.0,')
+            parts.append('/seg/%d.ts' % i)
+        self.manifest = '\n'.join(parts) + '\n'
+
+    def refresh_manifest(self):
+        """Re-poll upstream playlist so a live stream keeps rolling.
+
+        Keeps the last 2 segment URLs if the poll fails (segments rotate
+        every ~30s upstream, so stale URLs 404 anyway — Kodi will retry).
+        """
+        try:
+            req = urllib.request.Request(self.upstream_m3u8, headers=self.seg_headers)
+            with urllib.request.urlopen(req, timeout=10, context=_SSL_CTX) as resp:
+                man = resp.read().decode('utf-8', errors='replace')
+            if '#EXTM3U' in man:
+                seg_urls = [l.strip() for l in man.splitlines()
+                            if l.strip() and not l.startswith('#')]
+                if seg_urls:
+                    self.seg_urls = seg_urls
+                    parts = ['#EXTM3U', '#EXT-X-VERSION:3',
+                             '#EXT-X-TARGETDURATION:6']
+                    for i, _u in enumerate(seg_urls):
+                        parts.append('#EXTINF:6.0,')
+                        parts.append('/seg/%d.ts' % i)
+                    self.manifest = '\n'.join(parts) + '\n'
+        except Exception as e:
+            log("Manifest refresh error: %s" % e)
+        return self.manifest
+
+    def fetch_segment(self, idx):
+        if idx in self.cache:
+            return self.cache[idx]
+        if idx >= len(self.seg_urls):
+            return None
+        url = self.seg_urls[idx]
+        if not url.startswith('http'):
+            url = urllib.parse.urljoin(self.upstream_m3u8, url)
+        try:
+            req = urllib.request.Request(url, headers=self.seg_headers)
+            with urllib.request.urlopen(req, timeout=20, context=_SSL_CTX) as resp:
+                png = resp.read()
+            ts = _unwrap_png_segment(png)
+            if ts is not None:
+                self._cache_put(idx, ts)
+            return ts
+        except Exception as e:
+            log("Segment %d fetch error: %s" % (idx, e))
+            return None
+
+
+def get_unwrap_proxy():
+    """Singleton accessor so repeated plays reuse the same server."""
+    global _UNWRAP_PROXY
+    try:
+        _UNWRAP_PROXY
+    except NameError:
+        _UNWRAP_PROXY = UnwrapProxy()
+    return _UNWRAP_PROXY
 
 
 # ============ UI FUNCTIONS ============
@@ -289,11 +552,10 @@ def play_live_stream(channel_id):
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
 
-    # dlive.sx resolver (v2.7.2) — Referer must be the assetrage player origin:
-    # m3u8 loads with any/no Referer, but .ts SEGMENTS 403 unless
-    # Referer=https://assetrage.net/ (verified 2026-09-24).
+    # dlive.sx resolver (v2.8.0) — upstream PNG-stego cloaking is unwrapped
+    # by the built-in local proxy; just play the local manifest URL as-is
+    # (no pipe headers needed for 127.0.0.1).
     stream_url = resolve_live_stream(channel_id)
-    m3u8_referer = 'https://assetrage.net/'
 
     if not stream_url:
         xbmcgui.Dialog().notification(ADDON_NAME,
@@ -304,12 +566,9 @@ def play_live_stream(channel_id):
     log("Playing live: %s" % stream_url)
     xbmcgui.Dialog().notification(ADDON_NAME, "Resolved: " + stream_url[:80],
                                    xbmcgui.NOTIFICATION_INFO, 5000)
-    # Pipe syntax for HTTP headers (url|Header=Value&Header2=Value2)
-    # No inputstream.adaptive — use Kodi's built-in ffmpeg player
-    # (inputstream.adaptive was crashing Kodi)
-    stream_headers = {'Referer': m3u8_referer, 'User-Agent': UA}
-    header_url = "{}|{}".format(stream_url, urllib.parse.urlencode(stream_headers))
-    li = xbmcgui.ListItem(path=header_url)
+    # Local unwrap proxy manifest — plain HTTP, no inputstream.adaptive
+    # (Kodi's built-in ffmpeg player; inputstream.adaptive was crashing Kodi)
+    li = xbmcgui.ListItem(path=stream_url)
     li.setProperty("IsPlayable", "true")
     xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
 
