@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.2"
+    version="2.8.3"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -24,7 +24,7 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v2.8.2 - Embed-host rotation fix: dembed.top NXDOMAIN broke resolution ("unplayable item" 2026-10-10). Resolver now walks page host + daddyliveplayer.st fallback (embed path+query kept). Referer = the embed host that worked. v2.8.1 - Live-window proxy rewrite: dedicated refresher thread, appendix ledger, prefetch, ThreadingHTTPServer (fixed ~15s stalls). Segment 403 fix: Referer must be assetrage.net
+        <news>v2.8.3 - Self-healing upstream: if the edge/embed host dies mid-play ("It ran and died", stalls + demuxer EOF 2026-10-10), the proxy re-runs the resolve chain in the background and hot-appends fresh segments — play continues seamlessly, no sequence break (upstream rotated embeds twice that night: dembed.top, daddyliveplayer.st, bembed.sbs). v2.8.2 - Embed-host rotation fix: dembed.top NXDOMAIN broke resolution ("unplayable item" 2026-10-10). Resolver now walks page host + daddyliveplayer.st fallback (embed path+query kept). Referer = the embed host that worked. v2.8.1 - Live-window proxy rewrite: dedicated refresher thread, appendix ledger, prefetch, ThreadingHTTPServer (fixed ~15s stalls). Segment 403 fix: Referer must be assetrage.net
 v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, char-strip, slot reorder). English Sky F1 UK + DAZN F1 ES verified live. v2.7.0 - Lineup rebuilt: dlive.sx (current DaddyLive) now primary. Only 2 channels kept — Sky Sports F1 UK (English) + DAZN F1 ES (Spanish). Old daddylive channels.json + SportHD backups removed (dead upstream). v2.3.0 - Updated for daddylive.mov. v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
     </extension>
 </addon>

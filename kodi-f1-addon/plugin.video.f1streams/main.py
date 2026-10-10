@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.8.2
+F1 Streams Kodi Addon v2.8.3
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -54,6 +54,14 @@ ADDON_URL = sys.argv[0]
 #          ("unplayable item" with zero addon invoker lines). The embed PATH
 #          (/premiumtv/daddy.php?id=N) is stable across rotations, so the
 #          resolver now walks the page-derived host + known-good fallbacks.
+# v2.8.3 — mid-play upstream death ("It ran and died" 19:06 ACDT 2026-10-10):
+#          stalls from ~19:03, demuxer EOF 19:06:38. The v2.8.2 proxy polled a
+#          FIXED upstream URL forever with no re-resolution. Upstream rotated
+#          embed hosts twice that evening (dembed.top -> daddyliveplayer.st ->
+#          bembed.sbs). Now the refresher detects a frozen ledger + dead
+#          upstream, re-runs the full resolve chain in the background, and
+#          HOT-SWAPS to the fresh edge: ledger indices keep counting from the
+#          live position so the player never sees a sequence break.
 CHANNELS = [
     {'id': '60',  'title': 'Sky Sports F1 UK [English]'},
     {'id': '537', 'title': 'DAZN F1 ES [Spanish]'},
@@ -136,88 +144,94 @@ def _decode_econfig(blob):
     for i in range(4):
         slots[order[i]] = base64.b64decode(pieces[i] + '===').decode('latin-1')
     return base64.b64decode(''.join(slots) + '===').decode('utf-8', errors='replace')
+def resolve_upstream_fresh(channel_id):
+    """Run the full dlive.sx resolve chain; return (manifest_text, m3u8_url,
+    seg_headers) or raise. Used at play time AND by the proxy's self-heal.
+    Chain (v2.8.3): /watch.php?id=N -> /stream/stream-N.php iframe ->
+    player embed (const SRC = \".../index.m3u8\"). The embed HOST rotates
+    (dembed.top died 2026-10-10; daddyliveplayer.st / bembed.sbs serve it),
+    so the resolver walks the page host + EMBED_HOSTS until one yields SRC.
+    """
+    if not channel_id:
+        raise ValueError('no channel id')
+    # Step 1: watch.php page -> stream page iframe
+    watch_url = DLIVE_BASE + '/watch.php?id=' + channel_id
+    watch_html = fetch_page(watch_url)
+    if not watch_html:
+        raise RuntimeError('watch.php fetch failed for %s' % channel_id)
+    iframe_m = re.search(r'<iframe[^>]+src="(https?://[^"]*stream-\d+\.php[^"]*)"', watch_html)
+    if not iframe_m:
+        raise RuntimeError('no stream iframe in watch.php for %s' % channel_id)
+    stream_page_url = iframe_m.group(1)
+
+    # Step 2: stream page -> player embed. The page's iframe HOST rotates
+    # (dembed.top went NXDOMAIN 2026-10-10) so we only trust its PATH and
+    # walk candidate hosts: page-derived first, then EMBED_HOSTS.
+    page_html = fetch_page(stream_page_url)
+    if not page_html:
+        raise RuntimeError('stream page fetch failed for %s' % channel_id)
+    iframe_m = re.search(r'<iframe[^>]+src="([^"]+)"', page_html)
+    if not iframe_m:
+        raise RuntimeError('no iframe in stream page for %s' % channel_id)
+    embed_ref = iframe_m.group(1)
+    if embed_ref.startswith('//'):
+        embed_ref = 'https:' + embed_ref
+    _eu = urllib.parse.urlparse(embed_ref)
+    # keep path AND query — the ?id=N is how the embed picks the channel
+    embed_path = _eu.path + (('?' + _eu.query) if _eu.query else '')
+    if _eu.path in ('', '/'):
+        embed_path = '/premiumtv/daddy.php?id=' + channel_id
+
+    # Step 3: player page -> const SRC (v2.8.0; old _econfig blob is gone).
+    # Try each host until one serves a page containing const SRC.
+    candidates = []
+    page_host = urllib.parse.urlparse(embed_ref).hostname
+    if page_host:
+        candidates.append('https://' + page_host + embed_path)
+    for host in EMBED_HOSTS:
+        candidate = 'https://' + host + embed_path
+        if candidate not in candidates:
+            candidates.append(candidate)
+    player_html = None
+    player_origin = None
+    for candidate_url in candidates:
+        ph = fetch_page(candidate_url)
+        if ph and re.search(r'const\s+SRC\s*=\s*"', ph):
+            player_html = ph
+            origin = urllib.parse.urlparse(candidate_url)
+            player_origin = origin.scheme + '://' + origin.netloc + '/'
+            log("Embed host OK: %s" % origin.netloc)
+            break
+        log("Embed host failed: %s" % candidate_url)
+    if not player_html or not player_origin:
+        raise RuntimeError('all embed hosts failed for %s' % channel_id)
+    src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
+    if not src_m:
+        raise RuntimeError('no const SRC in player page for %s' % channel_id)
+    upstream_m3u8 = src_m.group(1)
+
+    # Step 4: fetch the freshly-resolved upstream manifest
+    seg_headers = {'User-Agent': UA, 'Referer': player_origin}
+    man = fetch_page(upstream_m3u8, seg_headers, 15)
+    if not man or '#EXTM3U' not in man:
+        raise RuntimeError('upstream manifest fetch failed for %s' % channel_id)
+    return man, upstream_m3u8, seg_headers
+
+
 def resolve_live_stream(channel_id):
     """Resolve a dlive.sx 24/7 channel id (e.g. '60') to a playable m3u8 URL.
 
-    Chain (v2.8.2): /watch.php?id=N -> /stream/stream-N.php iframe ->
-    player embed (const SRC = ".../index.m3u8"). The embed HOST rotates
-    (dembed.top died 2026-10-10; daddyliveplayer.st still serves it), so the
-    resolver walks the page host + EMBED_HOSTS until one yields const SRC.
     Segments are PNG-stego cloaked (gzip'd TS hidden in RGB pixel data,
     'TIKTIKPX' magic), so the manifest is re-served through a local unwrap
     proxy and Kodi plays http://127.0.0.1:<port>/stream.m3u8.
+    v2.8.3: chain work lives in resolve_upstream_fresh(); this wires the
+    proxy threads. channel_id is remembered on the proxy so the healer can
+    re-run the chain with the same id.
     """
     if not channel_id:
         return None
     try:
-        # Step 1: watch.php page -> stream page iframe
-        watch_url = DLIVE_BASE + '/watch.php?id=' + channel_id
-        watch_html = fetch_page(watch_url)
-        if not watch_html:
-            log("watch.php fetch failed for %s" % channel_id)
-            return None
-        iframe_m = re.search(r'<iframe[^>]+src="(https?://[^"]*stream-\d+\.php[^"]*)"', watch_html)
-        if not iframe_m:
-            log("No stream iframe in watch.php for %s" % channel_id)
-            return None
-        stream_page_url = iframe_m.group(1)
-
-        # Step 2: stream page -> player embed. The page's iframe HOST rotates
-        # (dembed.top went NXDOMAIN 2026-10-10) so we only trust its PATH and
-        # walk candidate hosts: page-derived first, then EMBED_HOSTS.
-        page_html = fetch_page(stream_page_url)
-        if not page_html:
-            log("stream page fetch failed for %s" % channel_id)
-            return None
-        iframe_m = re.search(r'<iframe[^>]+src="([^"]+)"', page_html)
-        if not iframe_m:
-            log("No iframe in stream page for %s" % channel_id)
-            return None
-        embed_ref = iframe_m.group(1)
-        if embed_ref.startswith('//'):
-            embed_ref = 'https:' + embed_ref
-        _eu = urllib.parse.urlparse(embed_ref)
-        # keep path AND query — the ?id=N is how the embed picks the channel
-        embed_path = _eu.path + (('?' + _eu.query) if _eu.query else '')
-        if _eu.path in ('', '/'):
-            embed_path = '/premiumtv/daddy.php?id=' + channel_id
-
-        # Step 3: player page -> const SRC (v2.8.0; old _econfig blob is gone).
-        # Try each host until one serves a page containing const SRC.
-        candidates = []
-        page_host = urllib.parse.urlparse(embed_ref).hostname
-        if page_host:
-            candidates.append('https://' + page_host + embed_path)
-        for host in EMBED_HOSTS:
-            candidate = 'https://' + host + embed_path
-            if candidate not in candidates:
-                candidates.append(candidate)
-        player_html = None
-        player_origin = None
-        for candidate_url in candidates:
-            ph = fetch_page(candidate_url)
-            if ph and re.search(r'const\s+SRC\s*=\s*"', ph):
-                player_html = ph
-                origin = urllib.parse.urlparse(candidate_url)
-                player_origin = origin.scheme + '://' + origin.netloc + '/'
-                log("Embed host OK: %s" % origin.netloc)
-                break
-            log("Embed host failed: %s" % candidate_url)
-        if not player_html or not player_origin:
-            log("All embed hosts failed for %s" % channel_id)
-            return None
-        src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
-        if not src_m:
-            log("No const SRC in player page for %s" % channel_id)
-            return None
-        upstream_m3u8 = src_m.group(1)
-
-        # Step 4: fetch upstream manifest, hand it to the unwrap proxy
-        seg_headers = {'User-Agent': UA, 'Referer': player_origin}
-        man = fetch_page(upstream_m3u8, seg_headers, 15)
-        if not man or '#EXTM3U' not in man:
-            log("Upstream manifest fetch failed for %s" % channel_id)
-            return None
+        man, upstream_m3u8, seg_headers = resolve_upstream_fresh(channel_id)
         seg_urls = [l.strip() for l in man.splitlines()
                     if l.strip() and not l.startswith('#')]
         if not seg_urls:
@@ -225,6 +239,7 @@ def resolve_live_stream(channel_id):
             return None
         proxy = get_unwrap_proxy()
         port = proxy.start() if not proxy.server else proxy.PORT
+        proxy.channel_id = channel_id
         proxy.load_manifest(upstream_m3u8, man, seg_headers)
         # dedicated refresher: polls upstream so the window keeps rolling
         if not proxy.refresher_thread or not proxy.refresher_thread.is_alive():
@@ -396,13 +411,19 @@ class UnwrapProxy:
       - prefetch thread unwraps the next segments before Kodi asks
       - ThreadingHTTPServer: playlist + segment requests never queue on a
         single accept loop
+    v2.8.3: self-healing. The refresher re-runs the full resolve chain when
+    the upstream dies mid-play (host rotations killed session 1 tonight) and
+    hot-swaps to the fresh edge — ledger seq continues, player never notices.
     """
 
     PORT = 8776
-    WINDOW = 4            # target playlist window size (segments)
-    MAX_HOLD = 48         # max ledger length before front-trim
+    WINDOW = 6            # target playlist window size (segments)
+    MAX_HOLD = 72         # max ledger length before front-trim
     POLL_MIN = 2.5        # seconds between upstream manifest polls
-    PREFETCH_AHEAD = 2    # unwrap this many segments before Kodi needs them
+    PREFETCH_AHEAD = 4    # unwrap this many segments before Kodi needs them
+    HEAL_POLL_FAILURES = 3   # hard manifest-poll failures before heal
+    HEAL_FROZEN_SECONDS = 45  # window unchanged this long == stale
+    HEAL_BACKOFF = 20     # seconds between re-resolve attempts
 
     def __init__(self):
         self.server = None
@@ -421,6 +442,12 @@ class UnwrapProxy:
         self.cache = {}              # abs_idx -> unwrapped TS bytes
         self.max_served = -1
         self._cache_lock = threading.Lock()
+        # v2.8.3 self-heal state
+        self.channel_id = None       # set by load_manifest caller
+        self.last_ledger_change = time.time()   # for frozen-window detection
+        self.last_ledger_len = -1
+        self._healing = threading.Event()       # re-resolve in progress
+        self._heal_thread = None
 
     def _cache_put(self, idx, ts):
         with self._cache_lock:
@@ -467,13 +494,18 @@ class UnwrapProxy:
 
     def _absorb(self, urls, durs):
         """Append newly-seen upstream segments to the absolute ledger."""
+        added = False
         for u, d in zip(urls, durs):
             if u not in self._seen:
                 self._seen.add(u)
                 abs_idx = self.media_seq + len(self.ledger)
                 self.ledger.append((abs_idx, u, d))
+                added = True
+        if added:
+            self.last_ledger_change = time.time()
 
     def load_manifest(self, upstream_m3u8, manifest_text, seg_headers):
+        """First load: reset ledger and start from segment 0."""
         urls, durs = self._parse_playlist(manifest_text)
         with self._lock:
             self.upstream_m3u8 = upstream_m3u8
@@ -486,6 +518,31 @@ class UnwrapProxy:
             self.last_poll = time.time()
             self.poll_failures = 0
             self._absorb(urls, durs)
+        self.prefetch_event.set()
+        if not self.prefetch_thread or not self.prefetch_thread.is_alive():
+            self.prefetch_thread = threading.Thread(
+                target=self._prefetch_loop, daemon=True)
+            self.prefetch_thread.start()
+
+    def load_manifest_append(self, upstream_m3u8, manifest_text, seg_headers):
+        """Heal swap (v2.8.3): APPEND to the live ledger, never reset it.
+
+        The fresh upstream's segments join at absolute idx = last+1; old
+        cached entries stay servable while Kodi transitions; MAX_HOLD trim
+        removes stale fronts naturally as new segments arrive. MEDIA-SEQUENCE
+        therefore never goes backwards — ffmpeg keeps playing seamlessly.
+        """
+        urls, durs = self._parse_playlist(manifest_text)
+        with self._lock:
+            self.upstream_m3u8 = upstream_m3u8
+            self.seg_headers = dict(seg_headers)
+            self.poll_failures = 0
+            self.last_poll = time.time()
+            before = len(self.ledger)
+            self._absorb(urls, durs)
+            added = len(self.ledger) - before
+        log("HEAL: upstream appended %d fresh segments (ledger %d -> %d)"
+            % (added, before, before + added))
         self.prefetch_event.set()
         if not self.prefetch_thread or not self.prefetch_thread.is_alive():
             self.prefetch_thread = threading.Thread(
@@ -507,8 +564,17 @@ class UnwrapProxy:
             return
         urls, durs = self._parse_playlist(man)
         with self._lock:
+            before = len(self.ledger)
             self._absorb(urls, durs)
-            self.poll_failures = 0
+            added = len(self.ledger) - before
+            if added == 0:
+                # Zombie edge: 200 OK but nothing new — treat as failure so
+                # HEAL_FROZEN_SECONDS / HEAL_POLL_FAILURES can engage.
+                self.poll_failures += 1
+                log("Manifest poll: 0 new segments (zombie) #%d"
+                    % self.poll_failures)
+            else:
+                self.poll_failures = 0
             if len(self.ledger) > self.MAX_HOLD:
                 drop = len(self.ledger) - self.MAX_HOLD
                 self.ledger = self.ledger[drop:]
@@ -574,8 +640,46 @@ class UnwrapProxy:
         while True:
             if self.upstream_m3u8:
                 self._poll_upstream()
+                self._maybe_start_heal()
             gap = self.POLL_MIN * (3 if self.poll_failures > 2 else 1)
             time.sleep(gap)
+
+    def _maybe_start_heal(self):
+        """Declare upstream dead when polls fail hard OR window freezes."""
+        if self._healing.is_set():
+            return
+        with self._lock:
+            n = len(self.ledger)
+            failed = self.poll_failures
+        if n != self.last_ledger_len:
+            self.last_ledger_len = n
+            self.last_ledger_change = time.time()
+        frozen = (time.time() - self.last_ledger_change) > self.HEAL_FROZEN_SECONDS
+        if failed >= self.HEAL_POLL_FAILURES or (frozen and failed >= 1):
+            log("HEAL: upstream dead (polls failed=%d, frozen=%s) — "
+                "re-resolving channel %s" % (failed, frozen, self.channel_id))
+            self._healing.set()
+            self._heal_thread = threading.Thread(target=self._heal,
+                                                 daemon=True)
+            self._heal_thread.start()
+
+    def _heal(self):
+        """Re-run the resolve chain in the background and hot-swap."""
+        tries = 0
+        while self._healing.is_set():
+            tries += 1
+            try:
+                man, upstream, hdrs = resolve_upstream_fresh(self.channel_id)
+            except Exception as e:
+                man, upstream, hdrs = None, None, None
+                log("HEAL: resolve attempt %d error: %s" % (tries, e))
+            if man and '#EXTM3U' in man:
+                self.load_manifest_append(upstream, man, hdrs)
+                self._healing.clear()
+                break
+            log("HEAL: attempt %d failed — retry in %ds" % (tries,
+                                                            self.HEAL_BACKOFF))
+            time.sleep(self.HEAL_BACKOFF)
 
     def _prefetch_loop(self):
         while True:
