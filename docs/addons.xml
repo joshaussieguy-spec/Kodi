@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addons>
+<addon
+    id="plugin.video.aflstreams"
+    version="1.3.2"
+    name="AFL Streams (Live)"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>AFL live streams + 24/7 channels (Fox Footy, Channel 7, SBS, ABC + more)</summary>
+        <description>Watch live Australian Football League matches plus 24/7 channels: Fox Footy, Fox Sports 502-507, Fox Cricket, Channel 7 (all states), 7mate, 7AFL, SBS, ABC, Cricket Gold, Racing.com, Sky News and Fox Sports 569.</description>
+        <platform>all</platform>
+        <language>en</language>
+        <license>MIT</license>
+        <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
+        <assets>
+            <icon>icon.png</icon>
+        </assets>
+        <news>v1.3.1 - Added AFL icon. Renamed 18+ channel to Fox Sports 569. v1.3.0 - Added Fox Footy, Fox Sports 502-507, Fox Cricket (daddylive). v1.2.0 - Added daddylive 24/7 channels. v1.0.0 - Initial release with i.mjh.nz AU channels.</news>
+    </extension>
+</addon>
+<addon
+    id="plugin.video.arabicshows"
+    version="1.0.10"
+    name="Arabic Shows"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="inputstream.ffmpegdirect" version="21.0.0" optional="true"/>
+        <import addon="plugin.video.youtube" version="7.0.0" optional="true"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Live Arabic TV + YouTube Drama — Syrian, Lebanese, Egyptian, Iraqi, Jordanian</summary>
+        <description>Watch live Arabic TV channels and YouTube drama content. 7 live TV groups: Syrian, Lebanese, Egyptian, Iraqi, Jordanian, Arabic Drama &amp; Movies, and Music. Plus YouTube sections for Syrian and Lebanese/Egyptian drama series including Bab Al Hara all seasons. 85+ live channels total. Made with love for Walaa.</description>
+        <disclaimer>This addon uses publicly available streaming links from iptv-org and YouTube channels. The author does not host or stream any content. YouTube section requires the plugin.video.youtube Kodi addon.</disclaimer>
+        <platform>all</platform>
+        <language>ar</language>
+        <license>GPL-3.0</license>
+        <forum>https://www.reddit.com/r/Addons4Kodi</forum>
+        <website>https://iptv-org.github.io</website>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
+        <news>v1.0.6 - Added 28 new channels: Egyptian group (MBC Masr, MBC 1 Egypt, Al Masriyah, CBC Sofra, Mekameleen), Iraqi group (Al Iraqia, Alhurra Iraq, Iraq Future), Jordan group (Jordan Satellite, Archive, Kitchen, Tourism, Roya Kids), plus MBC 1/5/Iraq/Mood, Alikhbaria Syria, Damascus Radio, LBC HD, Al Manar, Ajyal TV. Added YouTube drama section (Syrian + Lebanese/Egyptian channels &amp; playlists). Removed 2 dead streams (Alalam, iFilm). v1.0.5 - Added 15 channels including Bab Al Hara, MBC Masr Drama, Spacetoon. v1.0.4 - Added 22 Arabic music video channels.</news>
+    </extension>
+</addon>
+<addon
+    id="plugin.video.f1streams"
+    version="2.8.3"
+    name="F1 Streams (Live + Replays)"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Watch F1 live streams and full race replays in Kodi</summary>
+        <description>Two sources in one addon: LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen), and FULL RACE REPLAYAYS from fullraces.com (F1, F2, F3, NASCAR, IndyCar, Formula E, WRC, WSBK). No more popup hell — just clean Kodi playback.</description>
+        <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
+        <platform>all</platform>
+        <language>en</language>
+        <license>GPL-3.0</license>
+        <forum>https://www.reddit.com/r/Addons4Kodi</forum>
+        <website>https://daddylive.mov</website>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
+        <news>v2.8.3 - Self-healing upstream: if the edge/embed host dies mid-play ("It ran and died", stalls + demuxer EOF 2026-10-10), the proxy re-runs the resolve chain in the background and hot-appends fresh segments — play continues seamlessly, no sequence break (upstream rotated embeds twice that night: dembed.top, daddyliveplayer.st, bembed.sbs). v2.8.2 - Embed-host rotation fix: dembed.top NXDOMAIN broke resolution ("unplayable item" 2026-10-10). Resolver now walks page host + daddyliveplayer.st fallback (embed path+query kept). Referer = the embed host that worked. v2.8.1 - Live-window proxy rewrite: dedicated refresher thread, appendix ledger, prefetch, ThreadingHTTPServer (fixed ~15s stalls). Segment 403 fix: Referer must be assetrage.net
+v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, char-strip, slot reorder). English Sky F1 UK + DAZN F1 ES verified live. v2.7.0 - Lineup rebuilt: dlive.sx (current DaddyLive) now primary. Only 2 channels kept — Sky Sports F1 UK (English) + DAZN F1 ES (Spanish). Old daddylive channels.json + SportHD backups removed (dead upstream). v2.3.0 - Updated for daddylive.mov. v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
+    </extension>
+</addon>
+<addon
+    id="script.kodirestart"
+    version="1.0.0"
+    name="Restart Kodi"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.script" library="main.py"/>
+    <extension point="xbmc.addon.metadata">
+        <platform>all</platform>
+        <summary lang="en">Restart Kodi</summary>
+        <description lang="en">Restarts Kodi via XBMC.RestartApp. Useful on setups (Windows Store installs) where the power menu has no restart option.</description>
+        <icon>resources/icon.png</icon>
+    </extension>
+</addon>
+<addon
+    id="repository.thetallone"
+    version="1.1.1"
+    name="thetallone"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.addon" version="16.0.0"/>
+    </requires>
+    <extension point="xbmc.addon.repository" name="thetallone">
+        <dir>
+            <info compressed="false">https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/addons.xml</info>
+            <checksum>https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/addons.xml.md5.txt</checksum>
+            <datadir zip="true">https://cdn.jsdelivr.net/gh/joshaussieguy-spec/Kodi@main/repo/zips/</datadir>
+        </dir>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>thetallone — personal Kodi addons</summary>
+        <description>Kodi repository: AFL, Arabic channels, F1 streams.</description>
+        <platform>all</platform>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
+</addon>
+</addons>
