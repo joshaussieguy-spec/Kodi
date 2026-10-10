@@ -1,5 +1,5 @@
 """
-F1 Streams Kodi Addon v2.8.1
+F1 Streams Kodi Addon v2.8.2
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -49,12 +49,20 @@ ADDON_URL = sys.argv[0]
 #          Only 2 channels kept (Josh's lineup): 60 Sky Sports F1 UK (English),
 #          537 DAZN F1 ES (Spanish). Resolver chain: watch.php -> iframe ->
 #          window._econfig blob -> decode -> stream_url_nop2p m3u8.
+# v2.8.2 — dlive.sx player-iframe embed HOST rotates: dembed.top went NXDOMAIN
+#          2026-10-10 and resolution died at Step 3 before any proxy work
+#          ("unplayable item" with zero addon invoker lines). The embed PATH
+#          (/premiumtv/daddy.php?id=N) is stable across rotations, so the
+#          resolver now walks the page-derived host + known-good fallbacks.
 CHANNELS = [
     {'id': '60',  'title': 'Sky Sports F1 UK [English]'},
     {'id': '537', 'title': 'DAZN F1 ES [Spanish]'},
 ]
 
 DLIVE_BASE = 'https://dlive.sx'
+# Embed hosts rotate (dembed.top NXDOMAIN 2026-10-10; daddyliveplayer.st
+# still serves /premiumtv/daddy.php). Order: page-derived first, then these.
+EMBED_HOSTS = ['daddyliveplayer.st']
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 
@@ -131,8 +139,10 @@ def _decode_econfig(blob):
 def resolve_live_stream(channel_id):
     """Resolve a dlive.sx 24/7 channel id (e.g. '60') to a playable m3u8 URL.
 
-    Chain (v2.8.0): /watch.php?id=N -> /stream/stream-N.php iframe ->
-    daddyliveplayer.st player iframe -> const SRC = ".../index.m3u8".
+    Chain (v2.8.2): /watch.php?id=N -> /stream/stream-N.php iframe ->
+    player embed (const SRC = ".../index.m3u8"). The embed HOST rotates
+    (dembed.top died 2026-10-10; daddyliveplayer.st still serves it), so the
+    resolver walks the page host + EMBED_HOSTS until one yields const SRC.
     Segments are PNG-stego cloaked (gzip'd TS hidden in RGB pixel data,
     'TIKTIKPX' magic), so the manifest is re-served through a local unwrap
     proxy and Kodi plays http://127.0.0.1:<port>/stream.m3u8.
@@ -152,31 +162,55 @@ def resolve_live_stream(channel_id):
             return None
         stream_page_url = iframe_m.group(1)
 
-        # Step 2: stream page -> player iframe
+        # Step 2: stream page -> player embed. The page's iframe HOST rotates
+        # (dembed.top went NXDOMAIN 2026-10-10) so we only trust its PATH and
+        # walk candidate hosts: page-derived first, then EMBED_HOSTS.
         page_html = fetch_page(stream_page_url)
         if not page_html:
             log("stream page fetch failed for %s" % channel_id)
             return None
-        iframe_m = re.search(r'<iframe src="([^"]+)"', page_html)
+        iframe_m = re.search(r'<iframe[^>]+src="([^"]+)"', page_html)
         if not iframe_m:
             log("No iframe in stream page for %s" % channel_id)
             return None
+        embed_ref = iframe_m.group(1)
+        if embed_ref.startswith('//'):
+            embed_ref = 'https:' + embed_ref
+        _eu = urllib.parse.urlparse(embed_ref)
+        # keep path AND query — the ?id=N is how the embed picks the channel
+        embed_path = _eu.path + (('?' + _eu.query) if _eu.query else '')
+        if _eu.path in ('', '/'):
+            embed_path = '/premiumtv/daddy.php?id=' + channel_id
 
-        # Step 3: player page -> const SRC (v2.8.0; old _econfig blob is gone)
-        player_url = iframe_m.group(1)
-        if player_url.startswith('//'):
-            player_url = 'https:' + player_url
-        player_html = fetch_page(player_url)
-        if not player_html:
-            log("player page fetch failed for %s" % channel_id)
+        # Step 3: player page -> const SRC (v2.8.0; old _econfig blob is gone).
+        # Try each host until one serves a page containing const SRC.
+        candidates = []
+        page_host = urllib.parse.urlparse(embed_ref).hostname
+        if page_host:
+            candidates.append('https://' + page_host + embed_path)
+        for host in EMBED_HOSTS:
+            candidate = 'https://' + host + embed_path
+            if candidate not in candidates:
+                candidates.append(candidate)
+        player_html = None
+        player_origin = None
+        for candidate_url in candidates:
+            ph = fetch_page(candidate_url)
+            if ph and re.search(r'const\s+SRC\s*=\s*"', ph):
+                player_html = ph
+                origin = urllib.parse.urlparse(candidate_url)
+                player_origin = origin.scheme + '://' + origin.netloc + '/'
+                log("Embed host OK: %s" % origin.netloc)
+                break
+            log("Embed host failed: %s" % candidate_url)
+        if not player_html or not player_origin:
+            log("All embed hosts failed for %s" % channel_id)
             return None
         src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
         if not src_m:
             log("No const SRC in player page for %s" % channel_id)
             return None
         upstream_m3u8 = src_m.group(1)
-        origin = urllib.parse.urlparse(player_url)
-        player_origin = origin.scheme + '://' + origin.netloc + '/'
 
         # Step 4: fetch upstream manifest, hand it to the unwrap proxy
         seg_headers = {'User-Agent': UA, 'Referer': player_origin}
