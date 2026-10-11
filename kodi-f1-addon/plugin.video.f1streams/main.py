@@ -832,7 +832,9 @@ def show_matches(matches, content_type='videos', banner=None, alt=None):
                                      a['label'], a['ch'])})
             url = get_url({'action': 'play_alt', 'prov': a['prov'],
                            'ch': str(a['ch'])})
-            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, True)
+            # folder=False — IsPlayable items MUST be listed non-foldered;
+            # folder=True made Kodi navigate into them (empty-folder bug)
+            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, False)
     if not matches:
         li = xbmcgui.ListItem(label="No motorsport channels found right now.")
         li.setProperty('IsPlayable', 'false')
