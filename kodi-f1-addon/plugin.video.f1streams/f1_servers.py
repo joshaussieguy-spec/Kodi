@@ -286,6 +286,9 @@ class HLSRelay(object):
             with self._lock:
                 return (self.server.server_address[1], self.upstream_m3u8)
         url = resolve(provider, ch)
+        if not url:
+            # resolve failed — keep any existing session intact, tell caller
+            return (0, '')
         with self._lock:
             self.provider, self.ch = provider, ch
             if url and url != self.upstream_m3u8:

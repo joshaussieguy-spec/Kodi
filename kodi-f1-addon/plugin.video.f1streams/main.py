@@ -935,7 +935,7 @@ def play_alt_stream(prov, ch='7'):
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
     try:
-        port = f1srv.get_relay().ensure(prov, int(ch))
+        port, _up = f1srv.get_relay().ensure(prov, int(ch))
     except Exception as e:
         log("relay ensure failed (%s ch%s): %r" % (prov, ch, e))
         port = 0
