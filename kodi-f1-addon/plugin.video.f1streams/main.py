@@ -81,6 +81,13 @@ def log(msg):
 def get_url(params):
     return "%s?%s" % (ADDON_URL, urllib.parse.urlencode(params))
 
+try:
+    import f1_servers as f1srv
+    f1srv.NOTIFY = log
+except Exception as _e:
+    f1srv = None
+    log("f1_servers import failed: %r" % _e)
+
 
 def fetch_page(url, headers=None, timeout=20):
     """Fetch HTML page using urllib."""
@@ -807,8 +814,25 @@ def to_adelaide(time_str):
         return None
 
 
-def show_matches(matches, content_type='videos'):
+def show_matches(matches, content_type='videos', banner=None, alt=None):
     xbmcplugin.setContent(ADDON_HANDLE, content_type)
+    # 2.8.7 — top banner: current/next F1 event + Adelaide-local start time
+    if banner:
+        li = xbmcgui.ListItem(label=banner)
+        li.setProperty('IsPlayable', 'false')
+        li.setInfo('video', {'title': banner, 'plot': banner})
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, '', li, False)
+    # 2.8.7 — numbered backup servers (Sky F1 GB/DE/ES), listed right below
+    if alt:
+        for a in alt:
+            li = xbmcgui.ListItem(label=a['label'])
+            li.setProperty('IsPlayable', 'true')
+            li.setInfo('video', {'title': a['label'],
+                                 'plot': 'Backup Sky F1 server — %s (channel %s)' % (
+                                     a['label'], a['ch'])})
+            url = get_url({'action': 'play_alt', 'prov': a['prov'],
+                           'ch': str(a['ch'])})
+            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, True)
     if not matches:
         li = xbmcgui.ListItem(label="No motorsport channels found right now.")
         li.setProperty('IsPlayable', 'false')
@@ -833,7 +857,32 @@ def show_matches(matches, content_type='videos'):
 
 def show_f1_streams():
     channels = get_live_channels()
-    show_matches(channels)
+    banner = None
+    alt = None
+    if f1srv:
+        try:
+            banner = f1srv.banner_text()    # may be None (no F1 on right now)
+        except Exception as e:
+            log("banner failed: %r" % e)
+        try:
+            # English-language F1 feeds first (Josh's GB trio), then DE/ES
+            order = [('nexa', 7), ('vertex', 7), ('kora', 7),
+                     ('nexa', 19), ('vertex', 19), ('nexa', 30)]
+            tags = {7: 'Sky F1 UK', 19: 'Sky F1 DE', 30: 'F1 ES (DAZN)'}
+            seen = set()
+            alt = []
+            n = 0
+            for prov, ch in order:
+                if prov == 'kora':
+                    label_prov = 'kora (best-effort)'
+                else:
+                    label_prov = prov
+                n += 1
+                alt.append({'n': n, 'label': '%d. %s — %s' % (n, tags[ch], label_prov),
+                            'prov': prov, 'ch': ch})
+        except Exception as e:
+            log("alt list failed: %r" % e)
+    show_matches(channels, banner=banner, alt=alt)
 
 
 def search_events():
@@ -871,6 +920,33 @@ def play_live_stream(channel_id):
                                    xbmcgui.NOTIFICATION_INFO, 5000)
     # Local unwrap proxy manifest — plain HTTP, no inputstream.adaptive
     # (Kodi's built-in ffmpeg player; inputstream.adaptive was crashing Kodi)
+    li = xbmcgui.ListItem(path=stream_url)
+    li.setProperty("IsPlayable", "true")
+    xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
+
+
+def play_alt_stream(prov, ch='7'):
+    """2.8.7 — backup Sky F1 servers (vertex/nexa/kora GB/DE/ES) via the
+    plain-HLS relay: same local-manifest playback pattern as the dlive
+    unwrap path (built-in ffmpeg player, no inputstream.adaptive)."""
+    if not f1srv:
+        xbmcgui.Dialog().notification(ADDON_NAME, "Backup servers unavailable",
+                                      xbmcgui.NOTIFICATION_ERROR, 5000)
+        xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
+        return
+    try:
+        port = f1srv.get_relay().ensure(prov, int(ch))
+    except Exception as e:
+        log("relay ensure failed (%s ch%s): %r" % (prov, ch, e))
+        port = 0
+    if not port:
+        xbmcgui.Dialog().notification(ADDON_NAME,
+                                      "Server %s unreachable — try another" % prov,
+                                      xbmcgui.NOTIFICATION_ERROR, 5000)
+        xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
+        return
+    stream_url = "http://127.0.0.1:%d/plain/stream.m3u8" % port
+    log("Playing alt server %s ch%s: %s" % (prov, ch, stream_url))
     li = xbmcgui.ListItem(path=stream_url)
     li.setProperty("IsPlayable", "true")
     xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
@@ -1056,6 +1132,8 @@ def router(paramstring):
         show_f1_streams()
     elif action == 'play_live':
         play_live_stream(params.get('channel_id', ''))
+    elif action == 'play_alt':
+        play_alt_stream(params.get('prov', ''), params.get('ch', '7'))
     elif action == 'replays':
         show_replays(params.get('cat', '2026'))
     elif action == 'race_parts':
