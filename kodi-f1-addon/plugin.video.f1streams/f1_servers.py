@@ -253,6 +253,10 @@ class HLSRelay(object):
     HEAL_FROZEN = 45        # seconds without new segments => heal
     HEAL_FAILURES = 3
     MAX_HOLD = 96           # ledger front-trim threshold
+    PLAY_LAG = 32.0         # v2.8.9: manifest ends this many seconds behind
+                            # ledger head — delay-watch; prefetch thread keeps
+                            # the window pre-downloaded so upstream flap
+                            # bursts never starve Kodi's buffer
 
     def __init__(self):
         self.server = None
@@ -264,6 +268,7 @@ class HLSRelay(object):
         self.ledger = []    # [(idx, url, dur)]
         self.next_idx = 0
         self.cache = {}     # idx -> ts bytes
+        self._done = set()  # v2.8.9: idx once fetched-attempted (no restorm)
         self.max_served = -1
         self.last_change = time.time()
         self.poll_failures = 0
@@ -306,6 +311,7 @@ class HLSRelay(object):
         srv.relay = self
         threading.Thread(target=srv.serve_forever, daemon=True).start()
         threading.Thread(target=self._refresh_loop, daemon=True).start()
+        threading.Thread(target=self._prefetch_loop, daemon=True).start()
         self.server = srv
 
     @staticmethod
@@ -388,7 +394,16 @@ class HLSRelay(object):
         with self._lock:
             if not self.ledger:
                 return '#EXTM3U\n#EXT-X-ENDLIST\n'
-            window = self.ledger[-self.WINDOW:]
+            head = self.ledger[-1][0]
+            # v2.8.9 delay-watch: cut the window PLAY_LAG s behind ledger head
+            cut = head
+            acc = 0.0
+            for idx, _u, d in reversed(self.ledger):
+                if acc + d > self.PLAY_LAG and cut != head:
+                    break
+                acc += d
+                cut = idx
+            window = [e for e in self.ledger if cut <= e[0] <= head]
             first = window[0][0]
             dur = max(4, int(round(max(d for _i, _u, d in window))))
             lines = ['#EXTM3U', '#EXT-X-VERSION:3',
@@ -422,11 +437,24 @@ class HLSRelay(object):
             if ts and len(ts) > 4096:
                 with self._lock:
                     self.cache[idx] = ts
+                    self._done.add(idx)
                 return ts
             time.sleep(0.5)
         self._say('seg %d fetch failed' % idx)
-        self._heal_async()
+        self._done.add(idx)
+        # on-demand fallback also starved → heal (restores old resiliency)
+        if idx > self.max_served or (self.max_served == -1):
+            pass
+        self._heal_check_ondemand(idx)
         return ts
+
+    def _heal_check_ondemand(self, idx):
+        """Heal only if the failing seg is near the play edge (not a stale
+        backlog seg whose upstream rotated away)."""
+        with self._lock:
+            head = self.ledger[-1][0] if self.ledger else -1
+        if head >= 0 and (head - idx) <= self.WINDOW:
+            self._heal_async()
 
     def _health(self):
         now = time.time()
@@ -468,6 +496,41 @@ class HLSRelay(object):
                     self._say('HEAL ok after %d tries' % tries)
                     return
             time.sleep(15)
+
+    def _prefetch_loop(self):
+        """v2.8.9 delay-watch: pre-download the backlog window so Kodi never
+        waits on upstream mid-play. A seg failing prefetch stays retryable via
+        Kodi's on-demand fetch; extended upstream freezes are handled by the
+        heal thread (same as before)."""
+        while True:
+            try:
+                if self.upstream_m3u8:
+                    with self._lock:
+                        ledger = list(self.ledger)
+                        head = ledger[-1][0] if ledger else -1
+                        cut = head
+                        acc = 0.0
+                        for idx, _u, d in reversed(ledger):
+                            if acc + d > self.PLAY_LAG and cut != head:
+                                break
+                            acc += d
+                            cut = idx
+                        todo = [(idx, u) for idx, u, _d in ledger
+                                if cut <= idx <= head
+                                and idx not in self.cache
+                                and idx not in self._done]
+                    for idx, u in todo:
+                        ts = _http(u, timeout=SEG_TIMEOUT)
+                        if ts and len(ts) > 4096:
+                            with self._lock:
+                                self.cache[idx] = ts
+                                self._done.add(idx)
+                        else:
+                            with self._lock:
+                                self._done.add(idx)
+            except Exception as e:
+                self._say('prefetch error %r' % e)
+            time.sleep(1.0)
 
     def _refresh_loop(self):
         while True:
