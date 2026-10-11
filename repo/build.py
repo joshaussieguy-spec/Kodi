@@ -68,6 +68,14 @@ def zipdir(src, addon_id, version):
                 rel = os.path.relpath(full, src)
                 if "__pycache__" in rel:
                     continue
+                # Dev-only files never ship (2026-10-11): _lib/ is vendored
+                # curl_cffi for py3.11 dev boxes — its cp38 .pyds CANNOT load
+                # inside Kodi (dotted python3.8.dll) and it's 6.2 MB of dead
+                # weight; bin/curl-impersonate.exe is the real bypass. Extra
+                # excludes: ad-hoc TV debug probes.
+                top = rel.replace(os.sep, "/").split("/")[0]
+                if top in ("_lib", "tvtest.py", ".deploy-stamp"):
+                    continue
                 z.write(full, os.path.join(addon_id, rel.replace(os.sep, "/")))
     return out
 

@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
+plugin.video.f1streams/_lib/
+*/_lib/
+tvtest.py
+tvtest-out.json
+cf_bypass_probe.py
+.deploy-stamp
