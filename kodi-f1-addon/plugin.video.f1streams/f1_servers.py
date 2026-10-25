@@ -15,9 +15,18 @@ import re
 import subprocess
 import time
 
+import gzip
+import ssl
+
 ADDON_DIR = os.path.dirname(os.path.abspath(__file__))
 CURL = os.path.join(ADDON_DIR, 'bin', 'curl-impersonate.exe')
 _SUB_KW = {'creationflags': 0x08000000} if os.name == 'nt' else {}  # CREATE_NO_WINDOW
+# v2.8.10 — Android-safe: unverified-SSL context (Kodi Android's bundled
+# Python has no usable system CA store; CERT_VERIFY_FAILED blanked every
+# fetch). Mirrors main.py's _SSL_CTX.
+_SSL_CTX = ssl.create_default_context()
+_SSL_CTX.check_hostname = False
+_SSL_CTX.verify_mode = ssl.CERT_NONE
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/120.0 Safari/537.36')
 AGENDA_URL = 'https://tvsport.guide/proxy.php?source=index'
@@ -45,23 +54,33 @@ def _de_esc(s):
 
 
 def _http(url, referer=None, timeout=25):
-    exe = CURL if os.path.exists(CURL) else 'curl'
-    args = [exe, '-sS', '-L', '--max-time', str(timeout), '-A', UA]
-    if referer:
-        args += ['-e', referer]
-    args.append(url)
+    """v2.8.10: urllib-first (works on Android — no exe/curl needed, handles
+    gzip), curl-impersonate.exe kept as Windows-only fallback."""
     try:
-        return subprocess.check_output(args, timeout=timeout + 5, **_SUB_KW)
+        import urllib.request
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', UA)
+        req.add_header('Accept-Encoding', 'gzip')
+        if referer:
+            req.add_header('Referer', referer)
+        with urllib.request.urlopen(req, timeout=timeout, context=_SSL_CTX) as r:
+            data = r.read()
+        if (r.headers.get('Content-Encoding') or '').lower() == 'gzip':
+            data = gzip.decompress(data)
+        return data
     except Exception:
+        pass
+    if os.name == 'nt':
+        exe = CURL if os.path.exists(CURL) else 'curl'
+        args = [exe, '-sS', '-L', '--max-time', str(timeout), '-A', UA]
+        if referer:
+            args += ['-e', referer]
+        args.append(url)
         try:
-            import urllib.request
-            req = urllib.request.Request(url)
-            req.add_header('User-Agent', UA)
-            if referer:
-                req.add_header('Referer', referer)
-            return urllib.request.urlopen(req, timeout=timeout).read()
+            return subprocess.check_output(args, timeout=timeout + 5, **_SUB_KW)
         except Exception:
             return b''
+    return b''
 
 
 def fetch_schedule(timeout=25):
