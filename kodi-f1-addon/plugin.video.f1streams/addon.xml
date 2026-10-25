@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.10"
+    version="2.8.11"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -24,7 +24,11 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <s>v2.8.10 - Android-safe backup servers: HTTP now goes urllib-first with
+        <s>v2.8.11 - FIX: old Sky F1 English (main lane) works again. Edge is now
+token-gated: player page fetches /api/playlist-token (needs full browser CORS
+headers — Origin+Referer of the embed, Sec-Fetch set) and the playlist URL
+gets the token appended. Resolve fetches the token; unwrap-proxy polls
+tokened and re-tokens at ~110s so long races never stall. v2.8.10 - Android-safe backup servers: HTTP now goes urllib-first with
 unverified SSL (Kodi Android's Python has no usable CA store — cert failures
 blanked every fetch; curl-impersonate.exe kept as Windows fallback only).
 v2.8.9 - New: 32-second delayed watch — the relay now pre-downloads the next ~32s of stream and publishes the playlist that far behind live, so upstream freezing bursts are ridden out invisibly (no stalls, no buffering spinner). Also: relay cache eviction so long races can't fill RAM.</s>

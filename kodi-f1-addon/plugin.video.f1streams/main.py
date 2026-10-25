@@ -217,8 +217,36 @@ def resolve_upstream_fresh(channel_id):
         raise RuntimeError('no const SRC in player page for %s' % channel_id)
     upstream_m3u8 = src_m.group(1)
 
-    # Step 4: fetch the freshly-resolved upstream manifest
-    seg_headers = {'User-Agent': UA, 'Referer': player_origin}
+    # Step 4 (v2.8.11): the edge is token-gated. The player page's hls.js
+    # first GETs /api/playlist-token?slug=<first path part> (CORS: must send
+    # Origin+Referer of the embed — Referer alone gets 'forbidden', no
+    # Referer gets 'token required'), then plays SRC + '?t=<token>&_=<ms>'.
+    # Verified live 2026-10-26: tokened playlist 200, stego segments unwrap.
+    edge_p = urllib.parse.urlparse(upstream_m3u8)
+    slug = edge_p.path.strip('/').split('/')[0] if edge_p.path.strip('/') else ''
+    player_headers = {'User-Agent': UA,
+                      'Accept': '*/*',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                      'Origin': player_origin.rstrip('/'),
+                      'Referer': player_origin,
+                      'Sec-Fetch-Dest': 'empty',
+                      'Sec-Fetch-Mode': 'cors',
+                      'Sec-Fetch-Site': 'cross-site'}
+    tok = ''
+    if slug:
+        try:
+            tok_api = '%s://%s/api/playlist-token?slug=%s' % (
+                edge_p.scheme, edge_p.netloc, slug)
+            tok_body = fetch_page(tok_api, player_headers, 10) or ''
+            tj = json.loads(tok_body.decode('utf-8', 'replace')
+                            if isinstance(tok_body, bytes) else tok_body)
+            tok = tj.get('token', '') or ''
+        except Exception as e:
+            log("playlist-token fetch failed (%s) — trying bare SRC" % e)
+    if tok:
+        upstream_m3u8 = '%s?t=%s&_=%d' % (upstream_m3u8, tok,
+                                          int(time.time() * 1000))
+    seg_headers = dict(player_headers)
     man = fetch_page(upstream_m3u8, seg_headers, 15)
     if not man or '#EXTM3U' not in man:
         raise RuntimeError('upstream manifest fetch failed for %s' % channel_id)
@@ -435,6 +463,7 @@ class UnwrapProxy:
     HEAL_POLL_FAILURES = 3   # hard manifest-poll failures before heal
     HEAL_FROZEN_SECONDS = 45  # window unchanged this long == stale
     HEAL_BACKOFF = 20     # seconds between re-resolve attempts
+    TOKEN_TTL = 110.0     # v2.8.11: edge playlist-token lifetime (api: ~120s)
 
     def __init__(self):
         self.server = None
@@ -459,6 +488,56 @@ class UnwrapProxy:
         self.last_ledger_len = -1
         self._healing = threading.Event()       # re-resolve in progress
         self._heal_thread = None
+        # v2.8.11 edge token state ('' = edge is not token-gated)
+        self.token = ''
+        self.token_exp = 0.0
+
+    @staticmethod
+    def _split_token(url):
+        """v2.8.11: strip '?t=<token>&_=' from a tokened m3u8 URL; return
+        (token, bare_url). Bare URLs pass through untouched."""
+        try:
+            q = urllib.parse.urlsplit(url)
+        except Exception:
+            return '', url
+        tok = (urllib.parse.parse_qs(q.query).get('t') or [''])[0]
+        base = urllib.parse.urlunsplit((q.scheme, q.netloc, q.path, '', ''))
+        return tok, base
+
+    def _retoken(self, base_url, hdrs):
+        """v2.8.11: fetch a fresh <edge>/api/playlist-token for base_url.
+        Returns a tokened URL on success, '' on failure (stale token then
+        trips the normal poll-failure -> heal cycle, which re-resolves)."""
+        p = urllib.parse.urlsplit(base_url)
+        slug = p.path.strip('/').split('/')[0] if p.path.strip('/') else ''
+        if not slug:
+            return ''
+        thdrs = dict(hdrs)
+        thdrs['Accept'] = 'application/json'
+        try:
+            req = urllib.request.Request(
+                '%s://%s/api/playlist-token?slug=%s' % (p.scheme, p.netloc, slug),
+                headers=thdrs)
+            with urllib.request.urlopen(req, timeout=10,
+                                        context=_SSL_CTX) as resp:
+                tj = json.loads(resp.read().decode('utf-8', 'replace'))
+        except Exception as e:
+            log("playlist-token refresh failed: %s" % e)
+            with self._lock:
+                self.token_exp = time.time() + 20   # back off; heal covers it
+            return ''
+        tok = tj.get('token', '') or ''
+        if not tok:
+            return ''
+        try:
+            ttl = float(tj.get('ttl') or 120.0)
+        except (TypeError, ValueError):
+            ttl = 120.0
+        with self._lock:
+            self.token = tok
+            self.token_exp = time.time() + max(30.0, ttl - 8.0)
+        log("playlist-token refreshed (ttl %.0fs)" % ttl)
+        return base_url
 
     def _cache_put(self, idx, ts):
         with self._cache_lock:
@@ -518,9 +597,13 @@ class UnwrapProxy:
     def load_manifest(self, upstream_m3u8, manifest_text, seg_headers):
         """First load: reset ledger and start from segment 0."""
         urls, durs = self._parse_playlist(manifest_text)
+        tok = UnwrapProxy._split_token(upstream_m3u8)[0]
+        tok_exp = time.time() + self.TOKEN_TTL if tok else 0.0
         with self._lock:
             self.upstream_m3u8 = upstream_m3u8
             self.seg_headers = dict(seg_headers)
+            self.token = tok
+            self.token_exp = tok_exp
             self.ledger = []
             self._seen = set()
             self.media_seq = 0
@@ -544,9 +627,12 @@ class UnwrapProxy:
         therefore never goes backwards — ffmpeg keeps playing seamlessly.
         """
         urls, durs = self._parse_playlist(manifest_text)
+        tok = UnwrapProxy._split_token(upstream_m3u8)[0]
         with self._lock:
             self.upstream_m3u8 = upstream_m3u8
             self.seg_headers = dict(seg_headers)
+            self.token = tok
+            self.token_exp = time.time() + self.TOKEN_TTL if tok else 0.0
             self.poll_failures = 0
             self.last_poll = time.time()
             before = len(self.ledger)
@@ -564,8 +650,25 @@ class UnwrapProxy:
         """Poll upstream manifest; absorb new segments, trim the front."""
         with self._lock:
             up, hdrs = self.upstream_m3u8, dict(self.seg_headers)
+            tok, exp = self.token, self.token_exp
+        # v2.8.11: tokened edge. Polls go out with ?t=<token>&_=<ms>;
+        # refresh just before the ~120s TTL lapses so the window never
+        # stalls on an expired token mid-race.
+        if tok:
+            if not exp or time.time() >= exp:
+                fresh = self._retoken(self._split_token(up)[1], hdrs)
+                if fresh:
+                    with self._lock:
+                        up = self.upstream_m3u8 = fresh
+                    tok = self.token
+                elif time.time() < (self.token_exp if self.token_exp else 0):
+                    pass   # back-off set by failed _retoken; retry next poll
+            ts_ms = int(time.time() * 1000)
+            poll_url = '%s?t=%s&_=%d' % (self._split_token(up)[1], tok, ts_ms)
+        else:
+            poll_url = up
         try:
-            req = urllib.request.Request(up, headers=hdrs)
+            req = urllib.request.Request(poll_url, headers=hdrs)
             with urllib.request.urlopen(req, timeout=10,
                                         context=_SSL_CTX) as resp:
                 man = resp.read().decode('utf-8', errors='replace')
