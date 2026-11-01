@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.11"
+    version="2.8.12"
     name="F1 Streams (Android · Live)"
     provider-name="Josh"
 >
@@ -25,7 +25,8 @@
             <fanart>resources/fanart.jpg</fanart>
         </assets>
         <s>Android track — stdlib-only live build. PC-history changelog lives in the PC addon's manifest.</s>
-        <news>v2.8.11 - DIAG: on a failed resolve, the toast now shows the exact
+        <news>v2.8.12 - DIAG2: "Server nexa unreachable" toasts now include the real reason (DNS fail / timeout / SSL error) from f1_servers.http_error() — phone-side cause is visible without a log.
+v2.8.11 - DIAG: on a failed resolve, the toast now shows the exact
 failing STEP (STEP1 watch.php / STEP2 stream page / STEP3 embed hosts /
 STEP4 edge manifest) so phone-side failures are self-reported. Resolve
 retries once after 2s. Wider embed fallbacks: +dembed.st (observed live

@@ -58,7 +58,9 @@ def _de_esc(s):
 
 def _http(url, referer=None, timeout=25):
     """v2.8.10: urllib-first (works on Android — no exe/curl needed, handles
-    gzip), curl-impersonate.exe kept as Windows-only fallback."""
+    gzip), curl-impersonate.exe kept as Windows-only fallback. v2.8.15:
+    failure reason captured (http_error()) so the phone toast can say WHY."""
+    _LAST_HTTP_ERR[0] = ''
     try:
         import urllib.request
         req = urllib.request.Request(url)
@@ -71,8 +73,17 @@ def _http(url, referer=None, timeout=25):
         if (r.headers.get('Content-Encoding') or '').lower() == 'gzip':
             data = gzip.decompress(data)
         return data
-    except Exception:
-        pass
+    except Exception as _e:
+        reason = getattr(_e, 'reason', None)
+        base = reason if (reason is not None) else _e
+        _LAST_HTTP_ERR[0] = ('%s: %s' % (type(base).__name__, str(base)[:100]))
+        if NOTIFY:
+            try:
+                NOTIFY('_http fail %s -> %s' % (
+                    url.split('/')[2] if '://' in url else url,
+                    _LAST_HTTP_ERR[0]))
+            except Exception:
+                pass
     if os.name == 'nt':
         exe = CURL if os.path.exists(CURL) else 'curl'
         args = [exe, '-sS', '-L', '--max-time', str(timeout), '-A', UA]
@@ -226,6 +237,12 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 RELAY_PORT = 0            # 0 → pick free ephemeral port
 SEG_TIMEOUT = 20
 NOTIFY = None             # main.py assigns its log() here (after import)
+_LAST_HTTP_ERR = ['']     # v2.8.15: reason string for phone-side diagnostics
+
+
+def http_error():
+    """Last _http() error description ('' = all fetches succeeded)."""
+    return _LAST_HTTP_ERR[0]
 
 
 class _RelayHandler(BaseHTTPRequestHandler):

@@ -1102,9 +1102,15 @@ def play_alt_stream(prov, ch='7'):
         log("relay ensure failed (%s ch%s): %r" % (prov, ch, e))
         port = 0
     if not port:
-        xbmcgui.Dialog().notification(ADDON_NAME,
-                                      "Server %s unreachable — try another" % prov,
-                                      xbmcgui.NOTIFICATION_ERROR, 5000)
+        _why = ''
+        try:
+            _why = f1srv.http_error()
+        except Exception:
+            _why = ''
+        msg = ('Server %s unreachable%s' % (prov, (' — ' + _why[:70]) if _why else ''))
+        log("Alt %s failed: %s" % (prov, _why or 'resolve returned none'))
+        xbmcgui.Dialog().notification(ADDON_NAME, msg,
+                                      xbmcgui.NOTIFICATION_ERROR, 8000)
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
     stream_url = "http://127.0.0.1:%d/plain/stream.m3u8" % port
