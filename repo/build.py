@@ -41,13 +41,13 @@ ADDON_DIRS = [
 COMPAT_VERSIONS = {
     "plugin.video.aflstreams": ["1.3.1"],
     "plugin.video.arabicshows": ["1.0.6"],
-    "plugin.video.f1streams": ["2.8.13", "2.8.14", "2.8.15"],
+    "plugin.video.f1streams": ["2.8.12", "2.8.13", "2.8.14", "2.8.15"],
     "plugin.video.f1streams.android": ["2.8.10", "2.8.11", "2.8.12"],
     # 2026-11-02 3rd feed incident: jsDelivr froze at android 2.8.12 /
     # thetallone 1.1.1 and the prune deleted those exact filenames
     # (404 = "update failed" on cached phones). Backfill every vintage
     # the frozen jsDelivr feed (or an older cached feed) can still name.
-    "repository.thetallone": ["1.1.1"],
+    "repository.thetallone": ["1.1.1", "1.1.2"],
 }
 
 ARTWORK = ("icon.png", "fanart.jpg", "resources/icon.png", "resources/fanart.jpg")
