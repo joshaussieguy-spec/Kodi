@@ -96,7 +96,10 @@ CHANNELS = [
 DLIVE_BASE = 'https://dlive.sx'
 # Embed hosts rotate (dembed.top NXDOMAIN 2026-10-10; daddyliveplayer.st
 # still serves /premiumtv/daddy.php). Order: page-derived first, then these.
-EMBED_HOSTS = ['daddyliveplayer.st']
+# 2.8.14: dembed.st observed serving the embed 2026-11-02 — added as fallback
+# (page-derived candidate stays first; these cover page-host NXDOMAIN cases,
+# the known Android phone failure mode).
+EMBED_HOSTS = ['daddyliveplayer.st', 'dembed.st', 'bembed.sbs']
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 
@@ -115,7 +118,7 @@ except Exception as _e:
     log("f1_servers import failed: %r" % _e)
 
 
-def fetch_page(url, headers=None, timeout=20):
+def fetch_page(url, headers=None, timeout=25):
     """Fetch HTML page using urllib."""
     try:
         h = headers or {'User-Agent': UA, 'Referer': DLIVE_BASE + '/',
@@ -191,10 +194,10 @@ def resolve_upstream_fresh(channel_id):
     watch_url = DLIVE_BASE + '/watch.php?id=' + channel_id
     watch_html = fetch_page(watch_url)
     if not watch_html:
-        raise RuntimeError('watch.php fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP1 watch.php unreachable (%s)' % watch_url)
     iframe_m = re.search(r'<iframe[^>]+src="(https?://[^"]*stream-\d+\.php[^"]*)"', watch_html)
     if not iframe_m:
-        raise RuntimeError('no stream iframe in watch.php for %s' % channel_id)
+        raise RuntimeError('STEP1b no stream iframe in watch.php for %s' % channel_id)
     stream_page_url = iframe_m.group(1)
 
     # Step 2: stream page -> player embed. The page's iframe HOST rotates
@@ -202,10 +205,10 @@ def resolve_upstream_fresh(channel_id):
     # walk candidate hosts: page-derived first, then EMBED_HOSTS.
     page_html = fetch_page(stream_page_url)
     if not page_html:
-        raise RuntimeError('stream page fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP2 stream page unreachable (%s)' % stream_page_url)
     iframe_m = re.search(r'<iframe[^>]+src="([^"]+)"', page_html)
     if not iframe_m:
-        raise RuntimeError('no iframe in stream page for %s' % channel_id)
+        raise RuntimeError('STEP2b no iframe in stream page for %s' % channel_id)
     embed_ref = iframe_m.group(1)
     if embed_ref.startswith('//'):
         embed_ref = 'https:' + embed_ref
@@ -237,10 +240,13 @@ def resolve_upstream_fresh(channel_id):
             break
         log("Embed host failed: %s" % candidate_url)
     if not player_html or not player_origin:
-        raise RuntimeError('all embed hosts failed for %s' % channel_id)
+        raise RuntimeError('STEP3 all embed hosts failed for %s (tried %s)'
+                           % (channel_id, ', '.join(
+                               urllib.parse.urlparse(c).netloc or c
+                               for c in candidates)))
     src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
     if not src_m:
-        raise RuntimeError('no const SRC in player page for %s' % channel_id)
+        raise RuntimeError('STEP3b no const SRC in player page for %s' % channel_id)
     upstream_m3u8 = src_m.group(1)
 
     # Step 4 (v2.8.11): the edge is token-gated. The player page's hls.js
@@ -275,7 +281,8 @@ def resolve_upstream_fresh(channel_id):
     seg_headers = dict(player_headers)
     man = fetch_page(upstream_m3u8, seg_headers, 15)
     if not man or '#EXTM3U' not in man:
-        raise RuntimeError('upstream manifest fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP4 edge manifest fetch failed for %s (%s)'
+                           % (channel_id, upstream_m3u8[:70]))
     return man, upstream_m3u8, seg_headers
 
 
@@ -291,8 +298,23 @@ def resolve_live_stream(channel_id):
     """
     if not channel_id:
         return None
+    last_err = None
+    for attempt in (1, 2):
+        try:
+            if attempt == 2:
+                log("Resolve retry attempt 2 for %s" % channel_id)
+                time.sleep(2)
+            man, upstream_m3u8, seg_headers = resolve_upstream_fresh(channel_id)
+            break
+        except Exception as e:
+            last_err = e
+            log("Resolve attempt %d error (dlive.sx): %s" % (attempt, e))
+    else:
+        log("Stream resolve error (dlive.sx): %s" % last_err)
+        resolve_live_stream.last_error = str(last_err)
+        return None
+    resolve_live_stream.last_error = ''
     try:
-        man, upstream_m3u8, seg_headers = resolve_upstream_fresh(channel_id)
         seg_urls = [l.strip() for l in man.splitlines()
                     if l.strip() and not l.startswith('#')]
         if not seg_urls:
@@ -1048,9 +1070,11 @@ def play_live_stream(channel_id):
     stream_url = resolve_live_stream(channel_id)
 
     if not stream_url:
-        xbmcgui.Dialog().notification(ADDON_NAME,
-                                       "Could not resolve stream. The channel may be offline.",
-                                       xbmcgui.NOTIFICATION_ERROR, 5000)
+        err = getattr(resolve_live_stream, 'last_error', '') or ''
+        msg = ('Could not resolve: %s' % (err[:90] or 'channel may be offline'))
+        log("Play failed: %s" % err)
+        xbmcgui.Dialog().notification(ADDON_NAME, msg,
+                                       xbmcgui.NOTIFICATION_ERROR, 8000)
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
     log("Playing live: %s" % stream_url)

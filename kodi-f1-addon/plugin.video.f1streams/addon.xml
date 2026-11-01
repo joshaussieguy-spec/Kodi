@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.13"
+    version="2.8.14"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -24,7 +24,12 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <s>v2.8.13 - SPLIT: replays are now PC-only. Every fullraces route is gated
+        <s>v2.8.14 - DIAG: resolve failures now toast + log the exact failing STEP
+(STEP1 watch.php / STEP1b no iframe / STEP2 stream page / STEP2b no iframe /
+STEP3 all embed hosts + host list / STEP3b no SRC / STEP4 edge manifest).
+Resolve retries once (2s) before failing. Wider embed fallbacks: +dembed.st
+(observed live 2026-11-02), +bembed.sbs. fetch_page timeout 20s->25s.
+v2.8.13 - SPLIT: replays are now PC-only. Every fullraces route is gated
 behind PC_REPLAYS (bin/curl-impersonate.exe present — Windows only); on any
 other platform the replays menu is hidden and deep-links get a clean "needs
 the PC build" notice instead of a traceback. Replays lane itself unchanged

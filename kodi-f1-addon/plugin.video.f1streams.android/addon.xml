@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.10"
+    version="2.8.11"
     name="F1 Streams (Android · Live)"
     provider-name="Josh"
 >
@@ -25,7 +25,12 @@
             <fanart>resources/fanart.jpg</fanart>
         </assets>
         <s>Android track — stdlib-only live build. PC-history changelog lives in the PC addon's manifest.</s>
-        <news>v2.8.10 - ANDROID TRACK: first platform-split release. Live lanes only
+        <news>v2.8.11 - DIAG: on a failed resolve, the toast now shows the exact
+failing STEP (STEP1 watch.php / STEP2 stream page / STEP3 embed hosts /
+STEP4 edge manifest) so phone-side failures are self-reported. Resolve
+retries once after 2s. Wider embed fallbacks: +dembed.st (observed live
+2026-11-02), +bembed.sbs.
+v2.8.10 - ANDROID TRACK: first platform-split release. Live lanes only
 (dlive.sx + vertex/nexa/kora numbered servers) — replays omitted, that
 upstream blocks non-browser clients. Same live resolver as PC track; updates
 ride their own version line so PC-side changes can't break the phone.
