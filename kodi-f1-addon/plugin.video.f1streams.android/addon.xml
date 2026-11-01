@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+    id="plugin.video.f1streams.android"
+    version="2.8.10"
+    name="F1 Streams (Android · Live)"
+    provider-name="Josh"
+>
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="main.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary>Watch F1 live streams in Kodi (Android build)</summary>
+        <description>LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen) — Android-flavoured build: pure-Python stdlib only, no bundled Windows binaries, replays omitted (source blocks non-browser clients on mobile). Race replays: install the PC build on Windows Kodi.</description>
+        <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
+        <platform>all</platform>
+        <language>en</language>
+        <license>GPL-3.0</license>
+        <forum>https://www.reddit.com/r/Addons4Kodi</forum>
+        <website>https://daddylive.mov</website>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
+        <s>Android track — stdlib-only live build. PC-history changelog lives in the PC addon's manifest.</s>
+        <news>v2.8.10 - ANDROID TRACK: first platform-split release. Live lanes only
+(dlive.sx + vertex/nexa/kora numbered servers) — replays omitted, that
+upstream blocks non-browser clients. Same live resolver as PC track; updates
+ride their own version line so PC-side changes can't break the phone.
+(PC track continues at plugin.video.f1streams.)</news>
+    </extension>
+</addon>

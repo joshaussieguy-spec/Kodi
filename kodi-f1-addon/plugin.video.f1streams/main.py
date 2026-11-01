@@ -33,8 +33,34 @@ _SSL_CTX = ssl.create_default_context()
 _SSL_CTX.check_hostname = False
 _SSL_CTX.verify_mode = ssl.CERT_NONE
 
-# Local scraper module
-import fullraces as fr
+# Local scraper module. v2.8.13: platform-gated — fullraces.com is
+# Cloudflare-gated against plain urllib (verified 2026-11-02: HTTP 403), so
+# REPLAYS only exist where a Chrome-TLS impersonator is available (the
+# curl-impersonate.exe shipped in the PC build). On Android (no exe, cp38
+# curl_cffi can't load under Kodi's dotted python3.8.dll) the import is
+# skipped entirely and the menu hides every replays entry — the live lanes
+# (dlive.sx + vertex/nexa/kora) are pure stdlib and stay fully playable.
+import os as _os
+_IS_WINDOWS = _os.name == 'nt'
+_CUR_EXE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                         'bin', 'curl-impersonate.exe')
+# PC_REPLAYS = PC-only feature, two conditions: Windows OS *and* the bundled
+# impersonator present. (v2.8.13) OS check matters because the PC zip ships
+# bin/ — a phone that auto-updates the PC-id addon would otherwise expose a
+# dead replays menu instead of hiding it. The Android flavor zip ships no
+# bin/ and runs on posix, so the gate stays closed on both counts.
+PC_REPLAYS = _IS_WINDOWS and _os.path.isfile(_CUR_EXE)
+if PC_REPLAYS:
+    try:
+        import fullraces as fr
+    except Exception as _e:
+        try:
+            log("fullraces import failed — replays disabled: %r" % _e)
+        except Exception:
+            pass
+        fr = None
+else:
+    fr = None
 
 # --- Constants ---
 ADDON = xbmcaddon.Addon()
@@ -854,6 +880,9 @@ def show_main_menu():
     items = [
         {'label': 'Live F1 / Motorsport Streams',
          'url': get_url({'action': 'f1_live'}), 'is_folder': True},
+    ]
+    if PC_REPLAYS:   # v2.8.13: replays are PC-only (Cloudflare-gated source)
+        items += [
         {'label': 'F1 2026 Race Replays',
          'url': get_url({'action': 'replays', 'cat': '2026'}), 'is_folder': True},
         {'label': 'F1 2025 Race Replays',
@@ -878,6 +907,8 @@ def show_main_menu():
          'url': get_url({'action': 'replays', 'cat': 'wrc'}), 'is_folder': True},
         {'label': 'Search Replays',
          'url': get_url({'action': 'search_replays'}), 'is_folder': True},
+        ]   # end PC_REPLAYS replays block (v2.8.13)
+    items += [
         {'label': 'Settings',
          'url': get_url({'action': 'settings'}), 'is_folder': False},
     ]
@@ -1241,6 +1272,16 @@ def router(paramstring):
         play_live_stream(params.get('channel_id', ''))
     elif action == 'play_alt':
         play_alt_stream(params.get('prov', ''), params.get('ch', '7'))
+    elif not PC_REPLAYS and action in (
+            'replays', 'race_parts', 'play_okru', 'play_dm', 'search_replays'):
+        # v2.8.13: deep-links to replays features on a platform without the
+        # CF impersonator get a clean notice instead of a traceback dialog.
+        _lineup = xbmcgui.ListItem(
+            label='Race replays need the PC (Windows) build of this addon —'
+                  ' the replays source blocks non-browser clients.')
+        _lineup.setProperty('IsPlayable', 'false')
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, '', _lineup, False)
+        xbmcplugin.endOfDirectory(ADDON_HANDLE)
     elif action == 'replays':
         show_replays(params.get('cat', '2026'))
     elif action == 'race_parts':

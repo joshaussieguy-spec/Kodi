@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.12"
+    version="2.8.13"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -24,7 +24,11 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <s>v2.8.11 - FIX: old Sky F1 English (main lane) works again. Edge is now
+        <s>v2.8.13 - SPLIT: replays are now PC-only. Every fullraces route is gated
+behind PC_REPLAYS (bin/curl-impersonate.exe present — Windows only); on any
+other platform the replays menu is hidden and deep-links get a clean "needs
+the PC build" notice instead of a traceback. Replays lane itself unchanged
+(2.8.12 parser). Live lanes identical on all platforms. v2.8.11 - FIX: old Sky F1 English (main lane) works again. Edge is now
 token-gated: player page fetches /api/playlist-token (needs full browser CORS
 headers — Origin+Referer of the embed, Sec-Fetch set) and the playlist URL
 gets the token appended. Resolve fetches the token; unwrap-proxy polls
