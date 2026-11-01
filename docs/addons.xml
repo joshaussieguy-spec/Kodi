@@ -57,7 +57,7 @@
 </addon>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.15"
+    version="2.8.16"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -104,7 +104,7 @@ v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, 
 </addon>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.12"
+    version="2.8.13"
     name="F1 Streams (Android · Live)"
     provider-name="Josh"
 >
@@ -160,7 +160,7 @@ ride their own version line so PC-side changes can't break the phone.
 </addon>
 <addon
     id="repository.thetallone"
-    version="1.1.1"
+    version="1.1.2"
     name="thetallone"
     provider-name="Josh"
 >

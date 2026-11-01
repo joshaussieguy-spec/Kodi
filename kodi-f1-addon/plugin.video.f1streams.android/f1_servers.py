@@ -34,6 +34,14 @@ UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
 AGENDA_URL = 'https://tvsport.guide/proxy.php?source=index'
 PROVIDERS = (('vertex', 'vertex.st'), ('nexa', 'nexa.st'), ('kora', 'kora.st'))
 REFERER_PLAYLIST = 'https://watchfa.st/'
+# v2.8.16: per-session upstream referer — vertex manifests 403 unless the
+# referer is the provider's own host (nexa tolerates watchfa.st, vertex
+# doesn't; resolve() sets this to 'https://<provider-host>/' on success).
+_UPSTREAM_REFERER = ['']
+
+
+def _upstream_referer():
+    return _UPSTREAM_REFERER[0] or REFERER_PLAYLIST
 FEEDS = (
     ('vertex', 7, 'Sky F1 UK'), ('nexa', 7, 'Sky F1 UK'), ('kora', 7, 'Sky F1 UK'),
     ('nexa', 12, 'Sky F1 DE'), ('vertex', 12, 'Sky F1 DE'),
@@ -197,7 +205,22 @@ def resolve(provider, ch=7, timeout=25):
         fp = _http(emb, referer=ref, timeout=timeout).decode('utf-8', 'replace')
         u = _final_m3u8(fp)
         if u:
-            return u
+            return u    # nexa path — keep watchfa.st playlist referer (proven)
+        # v2.8.16: vertex (matchli.st embed) hides the playlist in
+        # window.PP_CLAPPR_CONFIG['src'] — a signed secure_hls.php URL with no
+        # literal .m3u8, so M3U8_RE misses it. Extract it directly. Its
+        # manifest 403s unless the referer is the provider's own host.
+        if 'PP_CLAPPR_CONFIG' in fp:
+            try:
+                cfg = json.loads(re.search(
+                    r'window\.PP_CLAPPR_CONFIG\s*=\s*(\{.*?\})\s*;',
+                    fp, re.S).group(1))
+                src = _de_esc(cfg.get('src') or '')
+                if src and src.startswith('http'):
+                    _UPSTREAM_REFERER[0] = base + '/'
+                    return src
+            except Exception:
+                pass
     # generic fallback: scrape the channel page itself
     page = _http(ref, timeout=timeout).decode('utf-8', 'replace')
     u = _final_m3u8(page)
@@ -383,7 +406,7 @@ class HLSRelay(object):
             return
         exp = self._sig_of(up)
         try:
-            body = _http(up, referer=REFERER_PLAYLIST, timeout=15
+            body = _http(up, referer=_upstream_referer(), timeout=15
                          ).decode('utf-8', 'replace')
         except Exception:
             body = ''
@@ -522,7 +545,7 @@ class HLSRelay(object):
                 url = None
             if url:
                 try:
-                    body = _http(url, referer=REFERER_PLAYLIST,
+                    body = _http(url, referer=_upstream_referer(),
                                  timeout=15).decode('utf-8', 'replace')
                 except Exception:
                     body = ''
