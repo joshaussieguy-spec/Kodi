@@ -970,10 +970,12 @@ def show_f1_streams():
         except Exception as e:
             log("banner failed: %r" % e)
         try:
-            # English-language F1 feeds first (Josh's GB trio), then DE/ES
+            # English-language F1 feeds first (Josh's GB trio), then DE/IT/ES
             order = [('nexa', 7), ('vertex', 7), ('kora', 7),
-                     ('nexa', 19), ('vertex', 19), ('nexa', 30)]
-            tags = {7: 'Sky F1 UK', 19: 'Sky F1 DE', 30: 'F1 ES (DAZN)'}
+                     ('nexa', 12), ('vertex', 12),
+                     ('nexa', 46), ('vertex', 46), ('nexa', 30)]
+            tags = {7: 'Sky F1 UK', 12: 'Sky F1 DE', 46: 'Sky F1 IT',
+                    30: 'F1 ES (DAZN)'}
             seen = set()
             alt = []
             n = 0

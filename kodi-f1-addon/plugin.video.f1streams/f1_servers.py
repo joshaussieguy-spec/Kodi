@@ -2,8 +2,10 @@
 """f1_servers.py — Sky F1 backup servers (GB/DE/ES) + event banner. F1 Streams 2.8.7.
 
 Agenda:  https://tvsport.guide/proxy.php?source=index  (JSON; startTimestamp = epoch ms)
-Servers: vertex.st / nexa.st / kora.st  ch7=Sky Sports F1 (GB), ch19=Sky Sport F1 (DE),
-         ch30=DAZN F1 (ES).  Chain: {host}/ch?id=N -> player/embed .php -> matchli.st
+Servers: vertex.st / nexa.st / kora.st  ch7=Sky Sports F1 (GB), ch12=Sky Sport F1 (DE),
+         ch46=Sky Sport F1 (IT), ch30=DAZN F1 (ES)  [2026-11-01 agenda re-map: DE
+         moved 19->12, IT 46 added].  Chain: {host}/ch?id=N -> player/embed .php ->
+         matchli.st
          embed page -> signed m3u8 (hls.hockey.do). Playlist needs *any* Referer
          (proxy supplies watchfa.st); segments are header-free. Sigs expire fast
          (short window) => resolve FRESH on every play. kora embed is a base64 blob
@@ -34,7 +36,8 @@ PROVIDERS = (('vertex', 'vertex.st'), ('nexa', 'nexa.st'), ('kora', 'kora.st'))
 REFERER_PLAYLIST = 'https://watchfa.st/'
 FEEDS = (
     ('vertex', 7, 'Sky F1 UK'), ('nexa', 7, 'Sky F1 UK'), ('kora', 7, 'Sky F1 UK'),
-    ('nexa', 19, 'Sky F1 DE'), ('vertex', 19, 'Sky F1 DE'),
+    ('nexa', 12, 'Sky F1 DE'), ('vertex', 12, 'Sky F1 DE'),
+    ('nexa', 46, 'Sky F1 IT'), ('vertex', 46, 'Sky F1 IT'),
     ('nexa', 30, 'F1 ES (DAZN)'),
 )
 M3U8_RE = re.compile(r'(https?://[^"\'\s\\]+\.m3u8[^"\'\s\\]*)')

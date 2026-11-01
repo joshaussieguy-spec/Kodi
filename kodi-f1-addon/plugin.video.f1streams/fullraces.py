@@ -133,8 +133,9 @@ CATEGORIES = [
     {'slug': '2026', 'label': 'Formula 1 2026'},
     {'slug': '2025', 'label': 'Formula 1 2025'},
     {'slug': 'watch/formula_1/formula_1_2024/21', 'label': 'Formula 1 2024'},
-    {'slug': 'formula1-2023', 'label': 'Formula 1 2023'},
-    {'slug': 'formula1-archive-races', 'label': 'F1 Classic Archive'},
+    {'slug': 'formula1-2022', 'label': 'Formula 1 2022'},
+    {'slug': 'formula1-2021', 'label': 'Formula 1 2021'},
+    {'slug': 'f1-academy', 'label': 'F1 Academy'},
     {'slug': 'f2-full-races', 'label': 'Formula 2'},
     {'slug': 'f3-full-races', 'label': 'Formula 3'},
     {'slug': 'formula-e', 'label': 'Formula E'},
@@ -250,6 +251,22 @@ def scrape_category(slug, page=1):
             (href.rstrip('/').split('/')[-1].replace('-', ' ').title())
         if 'fullraces.com' not in urllib.parse.urlparse(href).netloc:
             href = _abs(href)
+        if 'fullraces.com' in urllib.parse.urlparse(href).netloc and href not in seen \
+                and title and len(title) > 10:
+            seen.add(href)
+            races.append({'title': title, 'url': href, 'thumb': ''})
+
+    # Method 1c: short_item grid entries (current listing shape, 2026-11):
+    # <div id="entryID…"><div class="short_item"><div class="poster"><a href="…">
+    # <img …></a></div><div class="short_content"><h3><a href="…">Title</a></h3>
+    # NOTE: hrefs are site-relative here (/2nd-practice…), so _abs() them.
+    for m in re.finditer(
+        r'<div class="short_item[^"]*">.*?<div class="poster">\s*<a href="([^"]+)"><img[^>]*>'
+        r'.*?<h3><a href="[^"]+">(.*?)</a></h3>', html_text, re.DOTALL
+    ):
+        href, raw_title = m.group(1), m.group(2)
+        title = re.sub(r'<[^>]+>', '', raw_title).strip()
+        href = _abs(href)
         if 'fullraces.com' in urllib.parse.urlparse(href).netloc and href not in seen \
                 and title and len(title) > 10:
             seen.add(href)

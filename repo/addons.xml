@@ -57,7 +57,7 @@
 </addon>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.11"
+    version="2.8.12"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
