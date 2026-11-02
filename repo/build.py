@@ -84,6 +84,9 @@ def zipdir(src, addon_id, version):
                 top = rel.replace(os.sep, "/").split("/")[0]
                 if top in ("_lib", "tvtest.py", ".deploy-stamp"):
                     continue
+                # Throwaway dev scripts never ship (2026-11-02): test_*/probe_*
+                if fn.startswith(("test_", "probe_")):
+                    continue
                 z.write(full, os.path.join(addon_id, rel.replace(os.sep, "/")))
     return out
 
