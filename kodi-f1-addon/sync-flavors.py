@@ -65,7 +65,21 @@ def main():
     with open(os.path.join(ANDROID_DIR, "main.py"), "w",
               encoding="utf-8", newline="") as f:
         f.write(src)
-    print("synced main.py (gate -> PC_REPLAYS=False)")
+    print("synced main.py (gate -> PC_REPLAYS=False -> stdlib replays)")
+
+    # 2b. Android replays (v2.8.14, 2026-11-02): ok.ru direct MP4 verified on
+    # pure stdlib (206 + ftyp magic, Kodi UAs accepted), and race-page→okru
+    # parse verified via the SAME code. The only PC-only piece was scraping
+    # fullraces.com (CF 403 stdlib) — the Android flavor now ships
+    # fullraces_android.py which loads the static catalog JSON instead and
+    # reuses the identical ok.ru resolver logic. Ship it and the catalog is
+    # fetched at runtime from raw.githubusercontent.
+    fr_android = os.path.join(PC_DIR, "fullraces_android.py")
+    if os.path.isfile(fr_android):
+        shutil.copy2(fr_android, os.path.join(ANDROID_DIR, "fullraces_android.py"))
+        print("synced fullraces_android.py")
+    else:
+        print("WARN: fullraces_android.py missing — Android replays stay hidden")
 
     # 3. report versions from both manifests
     for d, label in ((PC_DIR, "PC"), (ANDROID_DIR, "Android")):

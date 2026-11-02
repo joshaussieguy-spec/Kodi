@@ -19,20 +19,12 @@ print('TARGET:', target['title'], '->', target['url'])
 src = fr.scrape_race_page(target['url'])
 print('title:', src['title'])
 print('ok_ru ids (%d):' % len(src['ok_ru']), src['ok_ru'])
-print('dailymotion parts (%d):' % len(src['dailymotion']), json.dumps(src['dailymotion']))
 print('filemoon (%d):' % len(src['filemoon']), src['filemoon'])
 
-ok = (len(src['ok_ru']) >= 2 and len(src['dailymotion']) >= 5)
-print('PARSE CHECK (>=2 ok.ru, >=5 DM parts):', 'PASS' if ok else 'FAIL')
+ok = (len(src['ok_ru']) >= 1)
+print('PARSE CHECK (>=1 ok.ru):', 'PASS' if ok else 'FAIL')
 
 # 4. Resolve each ok.ru id -> playable?
 for vid in src['ok_ru']:
     r = fr.resolve_okru(vid)
     print('okru %s ->' % vid, ('PLAYABLE q=%s type=%s url_ok=%s' % (r['quality'], r['type'], r['url'][:40] + '...')) if r else 'NONE')
-
-# 5. Resolve one DM part
-if src['dailymotion']:
-    dm = src['dailymotion'][0]
-    r = fr.resolve_dailymotion(dm['id'])
-    print('dm %s ->' % dm['id'], (r or {}).get('type', 'NONE'), (r or {}).get('url', '')[:50])
-    print('DM CHECK:', 'PASS' if r and r.get('url') else 'FAIL')

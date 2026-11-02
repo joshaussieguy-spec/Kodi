@@ -1,5 +1,6 @@
 """
-Fullraces.com scraper — resolves race replay video URLs from ok.ru and Dailymotion embeds.
+Fullraces.com scraper — resolves race replay video URLs from ok.ru embeds.
+(Dailymotion stripped 2026-11-02 — ok.ru is the only replay host.)
 Zero external dependencies — uses only Python builtins (urllib, html.parser, re, json).
 """
 
@@ -152,7 +153,7 @@ def scrape_race_page(url):
     """Parse a race page and extract video sources."""
     html_text = fetch_page(url)
     if not html_text:
-        return {'ok_ru': [], 'dailymotion': [], 'title': ''}
+        return {'ok_ru': [], 'title': ''}
 
     # Extract title
     title = ''
@@ -165,7 +166,6 @@ def scrape_race_page(url):
             title = m.group(1).strip()
 
     ok_ru_ids = []
-    dm_parts = []
 
     # Extract ok.ru iframe embeds
     for m in re.finditer(r'<iframe[^>]+src="[^"]*ok\.ru/videoembed/(\d+)', html_text):
@@ -174,19 +174,9 @@ def scrape_race_page(url):
         for m in re.finditer(r'<iframe[^>]+src="[^"]*ok\.ru/video/(\d+)', html_text):
             ok_ru_ids.append(m.group(1))
 
-    # Extract Dailymotion Part buttons
-    for m in re.finditer(
-        r'<a[^>]*class="su-button"[^>]*href="[^"]*dailymotion\.com[^"]*video=([a-zA-Z0-9]+)[^"]*"[^>]*>([^<]+)</a>',
-        html_text
-    ):
-        dm_parts.append({'id': m.group(1), 'label': m.group(2).strip()})
+    # (Dailymotion extraction removed 2026-11-02 — ok.ru is the only host)
 
-    # Fallback: any dailymotion links
-    if not dm_parts:
-        for m in re.finditer(r'dailymotion\.com/embed/video/([a-zA-Z0-9]+)', html_text):
-            dm_parts.append({'id': m.group(1), 'label': 'Part %d' % (len(dm_parts) + 1)})
-
-    return {'ok_ru': ok_ru_ids, 'dailymotion': dm_parts, 'title': title}
+    return {'ok_ru': ok_ru_ids, 'title': title}
 
 
 def resolve_okru(video_id):
@@ -218,23 +208,4 @@ def resolve_okru(video_id):
     except (json.JSONDecodeError, KeyError, TypeError):
         pass
 
-    return None
-
-
-def resolve_dailymotion(video_id):
-    """Resolve a Dailymotion video ID to an HLS m3u8 URL."""
-    api_url = "https://www.dailymotion.com/player/metadata/video/%s" % video_id
-    try:
-        req = urllib.request.Request(api_url, headers={
-            **HEADERS,
-            'Accept': 'application/json',
-        })
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode('utf-8', errors='replace'))
-        qualities = data.get('qualities', {})
-        auto = qualities.get('auto', [])
-        if auto and auto[0].get('url'):
-            return {'url': auto[0]['url'], 'type': 'hls'}
-    except Exception:
-        pass
     return None

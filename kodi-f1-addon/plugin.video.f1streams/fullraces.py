@@ -1,5 +1,6 @@
 """
-Fullraces.com scraper — resolves race replay video URLs from ok.ru and Dailymotion embeds.
+Fullraces.com scraper — resolves race replay video URLs from ok.ru embeds.
+(Dailymotion sources stripped 2026-11-02 — ok.ru is the only replay host.)
 Zero external dependencies — uses only Python builtins (urllib, html.parser, re, json).
 """
 
@@ -302,7 +303,7 @@ def scrape_race_page(url):
     """Parse a race page and extract video sources."""
     html_text = fetch_page(url)
     if not html_text:
-        return {'ok_ru': [], 'dailymotion': [], 'title': ''}
+        return {'ok_ru': [], 'title': ''}
 
     # Extract title
     title = ''
@@ -314,8 +315,8 @@ def scrape_race_page(url):
         if m:
             title = m.group(1).strip()
 
+    # (Dailymotion parsing removed 2026-11-02 — ok.ru is the only host)
     ok_ru_ids = []
-    dm_parts = []
     filemoon = []
 
     # ok.ru — iframes AND su-buttons (protocol-relative //ok.ru/videoembed/N)
@@ -323,38 +324,13 @@ def scrape_race_page(url):
         if m.group(1) not in ok_ru_ids:
             ok_ru_ids.append(m.group(1))
 
-    # Dailymotion — su-button class carries style suffixes; hrefs use
-    # geo.dailymotion.com/player.html?video=ID (and plain /embed/video/ID)
-    for m in re.finditer(
-        r'<a[^>]*class="[^"]*su-button[^"]*"[^>]*href="[^"]*(?:dailymotion\.com[^"]*video=|dailymotion\.com/embed/video/)([a-zA-Z0-9]+)[^"]*"[^>]*>(.*?)</a>',
-        html_text, re.DOTALL
-    ):
-        vid = m.group(1)
-        label = re.sub(r'<[^>]+>', '', m.group(2)).strip()
-        if not any(p['id'] == vid for p in dm_parts):
-            dm_parts.append({'id': vid, 'label': label or 'Part %d' % (len(dm_parts) + 1)})
-
-    # Fallback 1: geo.dailymotion player iframes/buttons regardless of class
-    if not dm_parts:
-        for m in re.finditer(r'geo\.dailymotion\.com/[a-z./]+\?video=([a-zA-Z0-9]+)', html_text):
-            vid = m.group(1)
-            if not any(p['id'] == vid for p in dm_parts):
-                dm_parts.append({'id': vid, 'label': 'Part %d' % (len(dm_parts) + 1)})
-
-    # Fallback 2: plain dailymotion embed urls
-    if not dm_parts:
-        for m in re.finditer(r'dailymotion\.com/embed/video/([a-zA-Z0-9]+)', html_text):
-            vid = m.group(1)
-            if not any(p['id'] == vid for p in dm_parts):
-                dm_parts.append({'id': vid, 'label': 'Part %d' % (len(dm_parts) + 1)})
-
     # Filemoon-style hosts — capture but not playable in-Kodi (PoW gate); kept in dict
     for m in re.finditer(r'href="https?://([^/"\']+\.com|[^/"\']+\.sbs)/d/([a-z0-9]+)"', html_text):
         host, vid = m.group(1), m.group(2)
         if host not in ('fullraces.com',):
             filemoon.append({'host': host, 'id': vid})
 
-    return {'ok_ru': ok_ru_ids, 'dailymotion': dm_parts, 'filemoon': filemoon, 'title': title}
+    return {'ok_ru': ok_ru_ids, 'filemoon': filemoon, 'title': title}
 
 
 def resolve_okru(video_id):
@@ -389,20 +365,4 @@ def resolve_okru(video_id):
     return None
 
 
-def resolve_dailymotion(video_id):
-    """Resolve a Dailymotion video ID to an HLS m3u8 URL."""
-    api_url = "https://www.dailymotion.com/player/metadata/video/%s" % video_id
-    try:
-        req = urllib.request.Request(api_url, headers={
-            **HEADERS,
-            'Accept': 'application/json',
-        })
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode('utf-8', errors='replace'))
-        qualities = data.get('qualities', {})
-        auto = qualities.get('auto', [])
-        if auto and auto[0].get('url'):
-            return {'url': auto[0]['url'], 'type': 'hls'}
-    except Exception:
-        pass
-    return None
+# resolve_dailymotion() removed 2026-11-02 — Dailymotion sources stripped.

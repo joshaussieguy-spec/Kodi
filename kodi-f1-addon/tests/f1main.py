@@ -915,16 +915,7 @@ def show_race_parts(race_url):
         play_url = get_url({'action': 'play_okru', 'video_id': vid, 'title': title})
         xbmcplugin.addDirectoryItem(ADDON_HANDLE, play_url, li, False)
 
-    for dm in info['dailymotion']:
-        label = "%s - %s [Dailymotion]" % (title, dm['label'])
-        li = xbmcgui.ListItem(label=label)
-        li.setArt({'icon': 'DefaultVideo.png'})
-        li.setInfo('video', {'title': label, 'plot': "Replay part via Dailymotion (HLS stream)"})
-        li.setProperty('IsPlayable', 'true')
-        play_url = get_url({'action': 'play_dm', 'video_id': dm['id'], 'title': title})
-        xbmcplugin.addDirectoryItem(ADDON_HANDLE, play_url, li, False)
-
-    if not info['ok_ru'] and not info['dailymotion']:
+    if not info['ok_ru']:
         li = xbmcgui.ListItem(label="No video sources found for this race.")
         li.setProperty('IsPlayable', 'false')
         xbmcplugin.addDirectoryItem(ADDON_HANDLE, '', li, False)
@@ -946,23 +937,7 @@ def play_okru(video_id, title=''):
     xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
 
 
-def play_dailymotion(video_id, title=''):
-    result = fr.resolve_dailymotion(video_id)
-    if not result:
-        xbmcgui.Dialog().notification(ADDON_NAME,
-                                       "Could not resolve Dailymotion video. It may have been removed.",
-                                       xbmcgui.NOTIFICATION_ERROR, 5000)
-        xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
-        return
-    log("Playing DM HLS: %s..." % result['url'][:80])
-    li = xbmcgui.ListItem(path=result['url'])
-    li.setInfo('video', {'title': title or 'F1 Replay'})
-    try:
-        li.setProperty('inputstream', 'inputstream.adaptive')
-        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    except Exception:
-        pass
-    xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
+# (play_dailymotion removed 2026-11-02 — Dailymotion sources stripped.)
 
 
 def search_replays():
@@ -1010,8 +985,6 @@ def router(paramstring):
         show_race_parts(params.get('url', ''))
     elif action == 'play_okru':
         play_okru(params.get('video_id', ''), params.get('title', ''))
-    elif action == 'play_dm':
-        play_dailymotion(params.get('video_id', ''), params.get('title', ''))
     elif action == 'search_replays':
         search_replays()
     elif action == 'settings':

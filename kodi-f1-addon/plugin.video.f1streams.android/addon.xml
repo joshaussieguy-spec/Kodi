@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.13"
+    version="2.8.14"
     name="F1 Streams (Android · Live)"
     provider-name="Josh"
 >
@@ -13,7 +13,7 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <summary>Watch F1 live streams in Kodi (Android build)</summary>
-        <description>LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen) — Android-flavoured build: pure-Python stdlib only, no bundled Windows binaries, replays omitted (source blocks non-browser clients on mobile). Race replays: install the PC build on Windows Kodi.</description>
+        <description>LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen) — Android-flavoured build: pure-Python stdlib only, no bundled Windows binaries. Replays: GitHub replay-catalog (ok.ru only — Dailymotion stripped 2026-11-02).</description>
         <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
         <platform>all</platform>
         <language>en</language>
