@@ -1,8 +1,8 @@
 import zipfile, os, re
 REPO = r'C:\Users\Josh\Kodi\repo'
 targets = [
-    r'zips\plugin.video.f1streams\plugin.video.f1streams-2.8.18.zip',
-    r'zips\plugin.video.f1streams.android\plugin.video.f1streams.android-2.8.15.zip',
+    r'zips\plugin.video.f1streams\plugin.video.f1streams-2.8.19.zip',
+    r'zips\plugin.video.f1streams.android\plugin.video.f1streams.android-2.8.16.zip',
 ]
 pat = re.compile(rb'dailymotion|dai\.ly|dailym', re.I)
 guard = re.compile(rb'removed 2026-11-02|stripped 2026-11-02', re.I)

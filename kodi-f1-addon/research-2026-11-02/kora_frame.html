@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Live Stream</title>
+
+    <script src="//cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
+    <script src="//cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/@swarmcloud/hls/p2p-engine.min.js"></script>
+<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #player { width: 100%; height: 100%; }
+
+        #info {
+            position: fixed; bottom: 20px; left: 20px;
+            color: rgba(255,255,255,.7); font-family: Segoe UI, sans-serif;
+            font-size: 12px; z-index: 9999;
+        }
+        #unmute-btn {
+            position: fixed; top: 18px; left: 50%; transform: translateX(-50%); z-index: 10000;
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px 11px 16px; border: 1px solid rgba(255,255,255,.25); border-radius: 999px;
+            background: rgba(20,20,20,.72); color: #fff; cursor: pointer;
+            font: 600 15px/1 Segoe UI, Roboto, Tahoma, sans-serif;
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+            box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 0 0 0 rgba(160,32,240,.6);
+            animation: unmute-pulse 2s ease-out infinite;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #unmute-btn:hover { background: rgba(160,32,240,.85); border-color: transparent; }
+        #unmute-btn:active { transform: translateX(-50%) scale(.96); }
+        #unmute-btn[hidden] { display: none; }
+        #unmute-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+        @keyframes unmute-pulse {
+            0%   { box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 0 0 0 rgba(160,32,240,.6); }
+            70%  { box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 0 0 14px rgba(160,32,240,0); }
+            100% { box-shadow: 0 6px 24px rgba(0,0,0,.45), 0 0 0 0 rgba(160,32,240,0); }
+        }
+        @media (max-width: 480px) { #unmute-btn { top: 12px; font-size: 14px; padding: 10px 16px 10px 13px; } }
+    </style>
+</head>
+<body>
+    <div id="player"></div>
+    <p id="info"></p>
+    <button id="unmute-btn" type="button" aria-label="Unmute">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6 9H2v6h4l5 4V5z" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        <span id="unmute-label">Tap to unmute</span>
+    </button>
+
+
+    <script>
+        const CONFIG = {
+            token:    "aHR0cHM6Ly9hMTEua29yYS1wbHVzLmxpL2xpdmUvZjEubTN1OD90b2tlbj1kUU91ejlkbEhZQUtlTjIxaUh2S0c5TEktNncmZXhwPTE3OTM2MjE1NDA",
+            exp:      1793621540,
+            channel:  "f1",
+            p2pToken: "ZbxOpQ0Vg"
+        };
+
+        function urlSafeBase64Decode(str) {
+            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            const padding = base64.length % 4;
+            if (padding) base64 += '='.repeat(4 - padding);
+            return atob(base64);
+        }
+
+        const streamUrl = urlSafeBase64Decode(CONFIG.token);
+
+        const p2pConfig = {
+            swFile: './sw.js',
+            live: true,
+            token: CONFIG.p2pToken,
+            announceLocation: 'us',
+            getStats: (p2pDownloaded, p2pUploaded, httpDownloaded) => {
+                const total = httpDownloaded + p2pDownloaded;
+                const ratio = Math.round(p2pDownloaded / total * 100) || 0;
+                document.getElementById('info').textContent =
+                    `P2P: ${ratio}% | Saved: ${p2pDownloaded}KB | Uploaded: ${p2pUploaded}KB`;
+            },
+            channelId: (url) => {
+                const parts = url.split('?')[0].split('/');
+                return parts[2] + parts[parts.length - 1];
+            }
+        };
+
+        const player = new Clappr.Player({
+            source: streamUrl,
+            parentId: '#player',
+            width: '100%',
+            height: '100%',
+            autoPlay: true,
+            mute: true,
+            crossOrigin: 'anonymous',
+            watermarkPosition: 'bottom-right',
+            mediacontrol: { seekbar: '#A020F0', buttons: '#A020F0' },
+            disableErrorScreen: true,
+            chromeless: false,
+            allowUserInteraction: true,
+            hlsjsConfig: { maxBufferSize: 0, maxBufferLength: 12, liveSyncDurationCount: 3 }
+        });
+
+        // Starts muted (autoplay is only allowed muted); one tap turns the sound on.
+        let soundOn = false;
+        const unmuteBtn = document.getElementById('unmute-btn');
+        if ((navigator.language || '').toLowerCase().startsWith('ar')) {
+            document.getElementById('unmute-label').textContent = 'اضغط لتشغيل الصوت';
+            unmuteBtn.setAttribute('aria-label', 'تشغيل الصوت');
+        }
+        // Embedders (multiplex) drive the sound with postMessage {type:'x9-sound', on} and get
+        // {type:'x9-sound-state', on} back on every change.
+        const tellParent = () => {
+            if (window.parent !== window) window.parent.postMessage({ type: 'x9-sound-state', on: soundOn }, '*');
+        };
+        function soundEnabled() {
+            soundOn = true;
+            unmuteBtn.hidden = true;
+            tellParent();
+        }
+        window.addEventListener('message', (e) => {
+            if (e.source !== window.parent || !e.data || e.data.type !== 'x9-sound') return;
+            try {
+                if (e.data.on) { player.unmute(); player.setVolume(100); } else { player.mute(); }
+            } catch (_) {}
+            if (e.data.on) {
+                soundEnabled();
+            } else {
+                soundOn = false;
+                unmuteBtn.hidden = false;
+                tellParent();
+            }
+        });
+        // Ad pop scripts lay an invisible full-page link over the player, so a click listener on the button
+        // never fires: catch the tap at window level (capture) by position, and let the ad click go through.
+        const onTap = (e) => {
+            if (soundOn || unmuteBtn.hidden) return;
+            const r = unmuteBtn.getBoundingClientRect();
+            const x = e.clientX, y = e.clientY;
+            if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+            try { player.unmute(); player.setVolume(100); } catch (_) {}
+            soundEnabled();
+        };
+        window.addEventListener('click', onTap, true);
+        window.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; if (t) onTap(t); }, true);
+        player.on(Clappr.Events.PLAYER_VOLUMEUPDATE, (v) => { if (v > 0) soundEnabled(); });
+        P2PEngineHls.tryRegisterServiceWorker(p2pConfig)
+            .then(() => {
+                p2pConfig.hlsjsInstance = player.core.getCurrentPlayback()?._hls;
+                new P2PEngineHls(p2pConfig);
+            })
+            .catch(() => {});
+
+        // Token renewal — fetch a fresh URL from frame.php ~5 min before expiry.
+        // Runs every 60s; when within 300s of exp it swaps the player source seamlessly.
+        let tokenExp = CONFIG.exp;
+        setInterval(() => {
+            const now = Math.floor(Date.now() / 1000);
+            if (tokenExp - now > 300) return;
+            fetch(`/frame.php?ch=${encodeURIComponent(CONFIG.channel)}&_json=1`, {
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data || !data.url || !data.exp) return;
+                tokenExp = data.exp;
+                try {
+                    player.configure({ source: data.url, mute: !soundOn });
+                } catch (_) {}
+            })
+            .catch(() => {});
+        }, 60000);
+    </script>
+
+
+<script data-cfasync="false" async type="text/javascript" src="//ll.reliedhounder.com/sGcQiNahL5T/152591"></script>
+ 
+<!--
+<script type="text/javascript">
+    aclib.runPop({
+        zoneId: '12138570',
+    });
+</script>
+
+-->
+
+
+ <script data-cfasync="false" src="https://capitalhospitals.org/1/2522fa3bc34792d820976e03c86b0a2b"></script>
+
+
+
+</body>
+</html>

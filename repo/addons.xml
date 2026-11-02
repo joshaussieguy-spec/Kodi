@@ -57,7 +57,7 @@
 </addon>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.18"
+    version="2.8.19"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -97,7 +97,10 @@ tokened and re-tokens at ~110s so long races never stall. v2.8.10 - Android-safe
 unverified SSL (Kodi Android's Python has no usable CA store — cert failures
 blanked every fetch; curl-impersonate.exe kept as Windows fallback only).
 v2.8.9 - New: 32-second delayed watch — the relay now pre-downloads the next ~32s of stream and publishes the playlist that far behind live, so upstream freezing bursts are ridden out invisibly (no stalls, no buffering spinner). Also: relay cache eviction so long races can't fill RAM.</s>
-        <news>v2.8.18 - REPLAYS EVERYWHERE: backend gate now self-dispatches —
+        <news>v2.8.19 - BACKUP LANES: +3 English channels from the same proven
+dlive family (verified resolving 2026-11-02): Sky Main Event UK (race
+simulcast), Sky Sports Mix UK, SuperSport Motorsport ZA (Sky's F1 world
+feed, English). All ride the existing resolver+proxy chain. v2.8.18 - REPLAYS EVERYWHERE: backend gate now self-dispatches —
 Windows+exe keeps the live fullraces.com scrape, everything else falls back
 to the GitHub replay-catalog (ok.ru direct MP4, the .ru streams) which has
 shipped in the Android flavor since 2.8.14 but was never menu-wired until
@@ -108,7 +111,7 @@ v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, 
 </addon>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.15"
+    version="2.8.16"
     name="F1 Streams (Android · Live + Replays)"
     provider-name="Josh"
 >
@@ -139,7 +142,12 @@ stdlib). Menu, search and playback all live on the phone. v2.8.14 - DIAG: resolv
 watch.php / STEP2 stream page / STEP3 embed hosts / STEP4 edge manifest).
 Resolve retries once (2s) before failing. Wider embed fallbacks: +dembed.st,
 +bembed.sbs. fetch_page timeout 20s->25s.</s>
-        <news>v2.8.18 - REPLAYS ON ANDROID: backend gate now self-dispatches —
+        <news>v2.8.16 - BACKUP LANES: +3 English channels from the same proven
+dlive family (verified resolving 2026-11-02): Sky Main Event UK (race
+simulcast), Sky Sports Mix UK, SuperSport Motorsport ZA (Sky's F1 world
+feed, English). All ride the existing resolver+proxy chain. Same code as
+PC 2.8.19.
+v2.8.18 - REPLAYS ON ANDROID: backend gate now self-dispatches —
 GitHub replay-catalog (ok.ru direct MP4, the .ru streams) serves replays,
 search and playback on Android; Windows+exe keeps the live fullraces scrape.
 main.py is byte-identical on both tracks from this version.

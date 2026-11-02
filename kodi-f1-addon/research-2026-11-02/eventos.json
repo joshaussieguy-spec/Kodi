@@ -1,0 +1,2196 @@
+{
+    "sports": [
+        {
+            "id": "basketball",
+            "name": "Basketball",
+            "icon": "🏀",
+            "leagues": [
+                {
+                    "name": "NBA",
+                    "logo": "https://upload.wikimedia.org/wikipedia/en/0/03/National_Basketball_Association_logo.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Golden State Warriors vs LA Clippers",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-01 20:30",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 69,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Golden State Warriors",
+                            "awayTeam": "LA Clippers",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Prime Video",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=amazon1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba3",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Los Angeles Lakers vs Toronto Raptors",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-01T21:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 71,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Los Angeles Lakers",
+                            "awayTeam": "Toronto Raptors",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba4",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Indiana Pacers vs Atlanta Hawks",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02 19:30",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 104,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Indiana Pacers",
+                            "awayTeam": "Atlanta Hawks",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba6",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Cleveland Cavaliers vs Oklahoma City Thunder",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T19:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 97,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Cleveland Cavaliers",
+                            "awayTeam": "Oklahoma City Thunder",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "HBO Max 1",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=max1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Philadelphia 76ers vs Chicago Bulls",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T19:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 100,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Philadelphia 76ers",
+                            "awayTeam": "Chicago Bulls",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Charlotte Hornets vs Detroit Pistons",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T19:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 101,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Charlotte Hornets",
+                            "awayTeam": "Detroit Pistons",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/cha.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba3",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Orlando Magic vs Washington Wizards",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T19:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 102,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Orlando Magic",
+                            "awayTeam": "Washington Wizards",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba4",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "New York Knicks vs Brooklyn Nets",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T19:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 103,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "New York Knicks",
+                            "awayTeam": "Brooklyn Nets",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba5",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Memphis Grizzlies vs New Orleans Pelicans",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T20:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 105,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Memphis Grizzlies",
+                            "awayTeam": "New Orleans Pelicans",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/mem.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/no.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba7",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Minnesota Timberwolves vs Milwaukee Bucks",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T20:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 106,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Minnesota Timberwolves",
+                            "awayTeam": "Milwaukee Bucks",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/min.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba8",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Dallas Mavericks vs Sacramento Kings",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T20:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 107,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Dallas Mavericks",
+                            "awayTeam": "Sacramento Kings",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/sac.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba9",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "San Antonio Spurs vs Utah Jazz",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T20:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 110,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "San Antonio Spurs",
+                            "awayTeam": "Utah Jazz",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/uta.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba10",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Houston Rockets vs Boston Celtics",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T20:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 111,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Houston Rockets",
+                            "awayTeam": "Boston Celtics",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba11",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Denver Nuggets vs Portland Trail Blazers",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T21:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 112,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Denver Nuggets",
+                            "awayTeam": "Portland Trail Blazers",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/por.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba12",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Golden State Warriors vs Phoenix Suns",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T22:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 113,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Golden State Warriors",
+                            "awayTeam": "Phoenix Suns",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "LA Clippers vs Toronto Raptors",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T22:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 114,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "LA Clippers",
+                            "awayTeam": "Toronto Raptors",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Los Angeles Lakers vs Miami Heat",
+                            "league": "NBA",
+                            "code": "NBA",
+                            "time": "2026-11-02T22:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 115,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Los Angeles Lakers",
+                            "awayTeam": "Miami Heat",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney12",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "NBA League Pass",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=nba3",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                }
+            ]
+        },
+        {
+            "id": "football",
+            "name": "Football",
+            "icon": "⚽",
+            "leagues": [
+                {
+                    "name": "Liga Profesional",
+                    "logo": "https://upload.wikimedia.org/wikipedia/en/6/64/Liga_Profesional_de_F%C3%BAtbol_%28Argentina%29_logo.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Platense vs Central Córdoba SdE",
+                            "league": "Liga Profesional",
+                            "code": "AR",
+                            "time": "2026-11-02T17:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 91,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Platense",
+                            "awayTeam": "Central Córdoba SdE",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7764.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11989.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "ESPN Premium",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espnpremium",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney8",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Defensa y Justicia vs Independiente",
+                            "league": "Liga Profesional",
+                            "code": "AR",
+                            "time": "2026-11-02T17:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 92,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Defensa y Justicia",
+                            "awayTeam": "Independiente",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8950.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "TNT Sports",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tntsports",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney9",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Independiente Rivadavia vs Banfield",
+                            "league": "Liga Profesional",
+                            "code": "AR",
+                            "time": "2026-11-02T19:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 98,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Independiente Rivadavia",
+                            "awayTeam": "Banfield",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/9744.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/235.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "TNT Sports",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tntsports",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Atlético Tucumán vs Argentinos Juniors",
+                            "league": "Liga Profesional",
+                            "code": "AR",
+                            "time": "2026-11-02T19:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 99,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Atlético Tucumán",
+                            "awayTeam": "Argentinos Juniors",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/9785.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "ESPN Premium",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espnpremium",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN AR",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espnar",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney11",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Liga MX",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Cruz Azul vs León",
+                            "league": "Liga MX",
+                            "code": "LIGAMX",
+                            "time": "2026-11-01T20:10:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 66,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Cruz Azul",
+                            "awayTeam": "León",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/218.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/228.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "TUDN USA",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tudn_usa",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "TUDN MX",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tudnmx",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Canal 5 MX",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=canal5mx",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "MLS",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Los Angeles FC vs Minnesota United",
+                            "league": "MLS",
+                            "code": "MLS",
+                            "time": "2026-11-01T20:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 70,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Los Angeles FC",
+                            "awayTeam": "Minnesota United",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/18966.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17362.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Apple TV Español",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=appletv6",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Portland Timbers vs Houston Dynamo",
+                            "league": "MLS",
+                            "code": "MLS",
+                            "time": "2026-11-01T21:45:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 72,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Portland Timbers",
+                            "awayTeam": "Houston Dynamo",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/9723.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6077.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Apple TV Español",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=appletv7",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "FOX Deportes USA",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=fox_deportes_usa",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Serie A",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Orense vs Técnico Universitario",
+                            "league": "Serie A",
+                            "code": "ECUA",
+                            "time": "2026-11-02 15:30",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 87,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Orense",
+                            "awayTeam": "Técnico Universitario",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20695.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/9292.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Zapping EC",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=zapping_ec",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "ec",
+                            "flagUrl": "https://flagcdn.com/w320/ec.png",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Sassuolo vs Fiorentina",
+                            "league": "Serie A",
+                            "code": "IT",
+                            "time": "2026-11-02T12:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 76,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Sassuolo",
+                            "awayTeam": "Fiorentina",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3997.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/109.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN 5",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn5",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Universo",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=universo",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Atalanta vs Parma",
+                            "league": "Serie A",
+                            "code": "IT",
+                            "time": "2026-11-02T14:45:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 81,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Atalanta",
+                            "awayTeam": "Parma",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/105.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/115.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney4",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Primera División",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Albion vs Deportivo Maldonado",
+                            "league": "Primera División",
+                            "code": "URU",
+                            "time": "2026-11-02T18:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 93,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Albion",
+                            "awayTeam": "Deportivo Maldonado",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21403.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10000.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney10",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "LaLiga",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Deportivo La Coruña vs Osasuna",
+                            "league": "LaLiga",
+                            "code": "ES",
+                            "time": "2026-11-02T15:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 83,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Deportivo La Coruña",
+                            "awayTeam": "Osasuna",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/90.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/97.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney7",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN 4",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn4",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espnplus1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN Deportes",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espndeportes",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "LaLiga SmartBank",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Real Oviedo vs Las Palmas",
+                            "league": "LaLiga SmartBank",
+                            "code": "ES",
+                            "time": "2026-11-02T10:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 74,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Real Oviedo",
+                            "awayTeam": "Las Palmas",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/92.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/98.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "LaLiga Hypermotion",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=laligahypermotion",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Real Valladolid vs Leganés",
+                            "league": "LaLiga SmartBank",
+                            "code": "ES",
+                            "time": "2026-11-02T12:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 77,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Real Valladolid",
+                            "awayTeam": "Leganés",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/95.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17534.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "LaLiga Hypermotion",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=laligahypermotion",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Mallorca vs Cádiz",
+                            "league": "LaLiga SmartBank",
+                            "code": "ES",
+                            "time": "2026-11-02T15:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 84,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Mallorca",
+                            "awayTeam": "Cádiz",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/84.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3842.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "LaLiga Hypermotion",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=laligahypermotion",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Ligue 1",
+                    "logo": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Logo_Ligue_1_McDonald%27s_2024.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Lorient vs Brest",
+                            "league": "Ligue 1",
+                            "code": "FRA",
+                            "time": "2026-11-02T14:45:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 82,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Lorient",
+                            "awayTeam": "Brest",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/273.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6997.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney5",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Liga Chile",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Deportes Limache vs Audax Italiano",
+                            "league": "Liga Chile",
+                            "code": "CH",
+                            "time": "2026-11-02T16:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 89,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Deportes Limache",
+                            "awayTeam": "Audax Italiano",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/19195.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4138.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "TNT Sports Chile",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tntsportschile",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Deportes Concepción vs Palestino",
+                            "league": "Liga Chile",
+                            "code": "CH",
+                            "time": "2026-11-02T18:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 96,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Deportes Concepción",
+                            "awayTeam": "Palestino",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8110.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4422.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "TNT Sports Chile",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=tntsportschile",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Liga 1",
+                    "logo": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Flag_of_Russia.svg?utm_source=es.wikipedia.org&utm_campaign=api&utm_content=original",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Sport Huancayo vs Melgar",
+                            "league": "Liga 1",
+                            "code": "PE",
+                            "time": "2026-11-02T11:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 75,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Sport Huancayo",
+                            "awayTeam": "Melgar",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10318.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7312.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "L1 Max",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=l1max",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "UTC Cajamarca vs Deportivo Garcilaso",
+                            "league": "Liga 1",
+                            "code": "PE",
+                            "time": "2026-11-02T13:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 78,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "UTC Cajamarca",
+                            "awayTeam": "Deportivo Garcilaso",
+                            "homeLogo": "https://upload.wikimedia.org/wikipedia/commons/c/cf/UTC_Cajamarca.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21819.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "L1 Max",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=l1max",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Sporting Cristal vs FC Cajamarca",
+                            "league": "Liga 1",
+                            "code": "PE",
+                            "time": "2026-11-02T15:30:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 88,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Sporting Cristal",
+                            "awayTeam": "FC Cajamarca",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2673.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131655.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "L1 Max",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=l1max",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Premier League",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Newcastle United vs Everton",
+                            "league": "Premier League",
+                            "code": "ENG",
+                            "time": "2026-11-02T15:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 85,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Newcastle United",
+                            "awayTeam": "Everton",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney6",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN 5",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn5",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "HBO Max 1",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=max1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Universo",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=universo",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Liga Colombia",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Rionegro Águilas vs Fortaleza CEIF",
+                            "league": "Liga Colombia",
+                            "code": "COL",
+                            "time": "2026-11-02T16:05:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 90,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Rionegro Águilas",
+                            "awayTeam": "Fortaleza CEIF",
+                            "homeLogo": "https://upload.wikimedia.org/wikipedia/en/a/aa/LogoAguilasPereira.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4928.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Win Sports +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winplus",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Atlético Bucaramanga vs Atlético Nacional",
+                            "league": "Liga Colombia",
+                            "code": "COL",
+                            "time": "2026-11-02T20:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 108,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Atlético Bucaramanga",
+                            "awayTeam": "Atlético Nacional",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6137.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5264.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Win Sports +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winplus",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Win Sports",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winsports",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Copa Colombia",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Santa Fe vs Once Caldas",
+                            "league": "Copa Colombia",
+                            "code": "COL",
+                            "time": "2026-11-01T20:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 67,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Santa Fe",
+                            "awayTeam": "Once Caldas",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5488.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2919.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Win Sports +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winplus",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "AFC Champions League Elite",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Pakhtakor vs Al Nassr",
+                            "league": "AFC Champions League Elite",
+                            "code": "AFCCHA",
+                            "time": "2026-11-02T08:45:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 73,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Pakhtakor",
+                            "awayTeam": "Al Nassr",
+                            "homeLogo": "https://upload.wikimedia.org/wikipedia/en/7/78/Pakhtakor_FC_logo.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/817.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "ESPN 4",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn4",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Al Gharafa vs Al Qadisiyah",
+                            "league": "AFC Champions League Elite",
+                            "code": "AFCCHA",
+                            "time": "2026-11-02T13:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 79,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Al Gharafa",
+                            "awayTeam": "Al Qadisiyah",
+                            "homeLogo": "https://a.espncdn.com/guid/a0ee48aa-0d67-c802-ac49-7492db10d894/logos/default.png",
+                            "awayLogo": "https://upload.wikimedia.org/wikipedia/commons/6/68/QAD_LOGO.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Disney +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=disney3",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Torneo BetPlay",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Independiente Yumbo vs Boca Juniors Cali",
+                            "league": "Torneo BetPlay",
+                            "code": "COL",
+                            "time": "2026-11-02T14:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 80,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Independiente Yumbo",
+                            "awayTeam": "Boca Juniors Cali",
+                            "homeLogo": "",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17372.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Win Sports +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winplus",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Unión Magdalena vs Envigado",
+                            "league": "Torneo BetPlay",
+                            "code": "COL",
+                            "time": "2026-11-02T18:10:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 95,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Unión Magdalena",
+                            "awayTeam": "Envigado",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17374.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5481.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "Win Sports +",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winplus",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Win Sports",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=winsports",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Primeira Liga",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Benfica vs Alverca",
+                            "league": "Primeira Liga",
+                            "code": "POR",
+                            "time": "2026-11-02T15:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 86,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Benfica",
+                            "awayTeam": "Alverca",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1929.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21613.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "DSports 2",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=dsports2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                },
+                {
+                    "name": "Brasileirão",
+                    "logo": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Campeonato_Brasileiro_S%C3%A9rie_A_logo_%282024%29.svg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=original",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "RB Bragantino vs Santos",
+                            "league": "Brasileirão",
+                            "code": "BRA",
+                            "time": "2026-11-02T18:00:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 94,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "RB Bragantino",
+                            "awayTeam": "Santos",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6079.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2674.png",
+                            "imageMode": "teams",
+                            "duration": 130,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "SporTV 1",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=sporttvbr1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                },
+                                {
+                                    "name": "Premiere 1",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=premiere1",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                }
+            ]
+        },
+        {
+            "id": "nfl",
+            "name": "American Football",
+            "icon": "🏈",
+            "leagues": [
+                {
+                    "name": "NFL",
+                    "logo": "",
+                    "image": "",
+                    "background": "",
+                    "events": [
+                        {
+                            "title": "Washington Commanders vs Philadelphia Eagles",
+                            "league": "NFL",
+                            "code": "NFL",
+                            "time": "2026-11-01T20:20:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 68,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Washington Commanders",
+                            "awayTeam": "Philadelphia Eagles",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "ESPN 2",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        },
+                        {
+                            "title": "Seattle Seahawks vs Chicago Bears",
+                            "league": "NFL",
+                            "code": "NFL",
+                            "time": "2026-11-02T20:15:00-05:00",
+                            "timezone": "America/Lima",
+                            "agendaOrder": 109,
+                            "image": "",
+                            "logo": "",
+                            "homeTeam": "Seattle Seahawks",
+                            "awayTeam": "Chicago Bears",
+                            "homeLogo": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+                            "awayLogo": "https://a.espncdn.com/i/teamlogos/nfl/500/chi.png",
+                            "imageMode": "teams",
+                            "duration": 180,
+                            "extraTime": 0,
+                            "status": "",
+                            "note": "",
+                            "servers": [
+                                {
+                                    "name": "ESPN 2",
+                                    "url": "https://streamxhd.sbs/live1.php?stream=espn2",
+                                    "type": "iframe",
+                                    "quality": "",
+                                    "active": true,
+                                    "languages": [],
+                                    "customLanguages": "",
+                                    "channelLogo": ""
+                                }
+                            ],
+                            "flagCode": "",
+                            "flagUrl": "",
+                            "homeCountryCode": "",
+                            "awayCountryCode": ""
+                        }
+                    ],
+                    "flagCode": "",
+                    "flagUrl": ""
+                }
+            ]
+        }
+    ],
+    "updated": "2026-11-01 21:58:19"
+}

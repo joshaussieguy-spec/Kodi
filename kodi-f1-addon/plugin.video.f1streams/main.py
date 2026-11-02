@@ -102,8 +102,17 @@ ADDON_URL = sys.argv[0]
 #          upstream, re-runs the full resolve chain in the background, and
 #          HOT-SWAPS to the fresh edge: ledger indices keep counting from the
 #          live position so the player never sees a sequence break.
+# v2.8.19 — Extra English lanes from the same proven dlive family (verified
+#          off-cycle 2026-11-02: token issued + manifest 200 + multi-MB
+#          segments on every lane): Sky Main Event UK (38, race simulcast),
+#          Sky Sports Mix UK (449), SuperSport Motorsport ZA (424, carries
+#          Sky's F1 world feed, English comms). They ride the EXISTING
+#          resolver chain + local unwrap proxy — no new backend code.
 CHANNELS = [
     {'id': '60',  'title': 'Sky Sports F1 UK [English]'},
+    {'id': '38',  'title': 'Sky Main Event UK [English — race simulcast]'},
+    {'id': '449', 'title': 'Sky Sports Mix UK [English]'},
+    {'id': '424', 'title': 'SuperSport Motorsport ZA [English]'},
     {'id': '537', 'title': 'DAZN F1 ES [Spanish]'},
 ]
 
