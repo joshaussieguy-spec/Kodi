@@ -41,8 +41,8 @@ ADDON_DIRS = [
 COMPAT_VERSIONS = {
     "plugin.video.aflstreams": ["1.3.1"],
     "plugin.video.arabicshows": ["1.0.6"],
-    "plugin.video.f1streams": ["2.8.12", "2.8.13", "2.8.14", "2.8.15", "2.8.16", "2.8.17", "2.8.18"],
-    "plugin.video.f1streams.android": ["2.8.10", "2.8.11", "2.8.12", "2.8.13", "2.8.14", "2.8.15"],
+    "plugin.video.f1streams": ["2.8.12", "2.8.13", "2.8.14", "2.8.15", "2.8.16", "2.8.17", "2.8.18", "2.8.19"],
+    "plugin.video.f1streams.android": ["2.8.10", "2.8.11", "2.8.12", "2.8.13", "2.8.14", "2.8.15", "2.8.16"],
     # 2026-11-02 3rd feed incident: jsDelivr froze at android 2.8.12 /
     # thetallone 1.1.1 and the prune deleted those exact filenames
     # (404 = "update failed" on cached phones). Backfill every vintage

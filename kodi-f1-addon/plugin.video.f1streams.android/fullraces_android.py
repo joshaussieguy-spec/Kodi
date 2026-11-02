@@ -277,10 +277,28 @@ def _parse_race_html(html_text):
 
 
 # attach entry lookup
+def _normalize_url(u):
+    """Canonical form for catalog matching: scheme/query/fragment/trailing
+    slash and case are all ignored, so deep-linked URL variants still hit
+    the right catalog entry."""
+    u = (u or '').strip().lower()
+    u = re.sub(r'^https?://', '', u)
+    u = u.split('#', 1)[0].split('?', 1)[0]
+    if len(u) > 1:
+        u = u.rstrip('/')
+    return u
+
+
 def _entry_for_url(self, race_url):
+    """Catalog-aware lookup (v2.8.20). Never guess by scraping: catalog
+    coverage is authoritative on Android, since fullraces.com stdlib
+    fetches are Cloudflare-403'd on real phones."""
+    want = _normalize_url(race_url)
+    if not want:
+        return None
     data = self.load()
     for r in data.get('races', []):
-        if r.get('url') == race_url:
+        if _normalize_url(r.get('url')) == want:
             return r
     return None
 
