@@ -24,18 +24,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PC_DIR = os.path.join(HERE, "plugin.video.f1streams")
 ANDROID_DIR = os.path.join(HERE, "plugin.video.f1streams.android")
 
-# Live-lane files that must be byte-identical, after the PC gate block gets
-# force-hazard-stripped: Android needs PC_REPLAYS permanently False even if the
-# PC gate block changes shape later.
+# Live-lane files that must be byte-identical.
 LIVE_FILES = ["f1_servers.py"]
 
-# main.py: copied, then the Android gate surgically replaced (keeps menu +
-# router edits flowing over from PC while replays stay structurally absent).
-MAIN_PATCH = (
-    ("_IS_WINDOWS = _os.name == 'nt'", ""),
-    ("PC_REPLAYS = _IS_WINDOWS and _os.path.isfile(_CUR_EXE)",
-     "PC_REPLAYS = False  # Android track: replays structurally PC-only"),
-)
+# main.py (v2.8.18, 2026-11-02): byte-identical on BOTH tracks — the gate is
+# self-dispatching inside main.py itself:
+#   Windows + bin/curl-impersonate.exe → fullraces.py (live fullraces scrape)
+#   anything else                      → fullraces_android.py (GitHub catalog)
+# so NO transform is applied anymore. Previous MAIN_PATCH swap
+# (PC_REPLAYS = False) was removed — it was what hid the Android replay menu.
+MAIN_PATCH = ()
 
 VERSIONS = {}  # addon id -> version, filled from each addon.xml
 
@@ -55,9 +53,9 @@ def main():
         shutil.copy2(os.path.join(PC_DIR, rel), os.path.join(ANDROID_DIR, rel))
         print("synced", rel)
 
-    # 2. main.py with the gate swap
+    # 2. main.py — byte-identical copy, no transform (v2.8.18 self-dispatch)
     src = read(os.path.join(PC_DIR, "main.py"))
-    for old, new in MAIN_PATCH:
+    for old, new in MAIN_PATCH:  # kept for future emergency transforms
         if old not in src:
             print(f"WARN: pattern not found in main.py: {old!r} — check the gate block")
             sys.exit(2)
@@ -65,7 +63,7 @@ def main():
     with open(os.path.join(ANDROID_DIR, "main.py"), "w",
               encoding="utf-8", newline="") as f:
         f.write(src)
-    print("synced main.py (gate -> PC_REPLAYS=False -> stdlib replays)")
+    print("synced main.py (byte-identical; gate self-dispatches per OS)")
 
     # 2b. Android replays (v2.8.14, 2026-11-02): ok.ru direct MP4 verified on
     # pure stdlib (206 + ftyp magic, Kodi UAs accepted), and race-page→okru

@@ -1,5 +1,9 @@
+# tests/f1main.py — frozen copy of the live addon main.py for headless imports.
+# Regenerated 2026-11-02 from plugin.video.f1streams/main.py @ 2.8.18
+# (replays-everywhere gate: Windows+exe -> live scrape, anything else -> catalog).
+# NOTE: this file is regenerated on release; edit main.py, not this copy.
 """
-F1 Streams Kodi Addon v2.8.3
+F1 Streams Kodi Addon v2.8.18
 Zero external dependencies — uses only Python builtins.
 Live streams from dlive.sx + race replays from fullraces.com.
 """
@@ -33,8 +37,48 @@ _SSL_CTX = ssl.create_default_context()
 _SSL_CTX.check_hostname = False
 _SSL_CTX.verify_mode = ssl.CERT_NONE
 
-# Local scraper module
-import fullraces as fr
+# Local scraper module. v2.8.18: self-dispatching replay backend.
+# Windows + shipped curl-impersonate.exe → fullraces.py (live scrape of
+# fullraces.com; plain urllib is Cloudflare-403'd, verified 2026-11-02).
+# Any other platform (Android/posix, or PC with the exe quarantined) →
+# fullraces_android.py: GitHub replay-catalog.json over raw.githubusercontent,
+# pure stdlib, ok.ru direct MP4 — verified end-to-end 2026-11-02.
+# (v2.8.13-2.8.17 hid replays entirely off-PC even though the catalog backend
+# shipped in the Android zip; 2.8.18 actually serves them.)
+import os as _os
+_IS_WINDOWS = _os.name == 'nt'
+_CUR_EXE = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                         'bin', 'curl-impersonate.exe')
+# fullraces.com scraping is Windows+exe-only (Cloudflare). OS check matters
+# because the PC zip ships bin/ — a POSIX box installing the PC-id addon
+# gets the catalog backend instead of a dead menu.
+_HAS_EXE = _IS_WINDOWS and _os.path.isfile(_CUR_EXE)
+fr = None
+if _HAS_EXE:
+    try:
+        import fullraces as fr
+    except Exception as _e:
+        try:
+            log("fullraces import failed — falling back to catalog: %r" % _e)
+        except Exception:
+            pass
+        fr = None
+if fr is None:
+    try:
+        import fullraces_android as fr   # catalog backend, pure stdlib
+    except Exception as _e:
+        try:
+            log("fullraces_android import failed — replays disabled: %r" % _e)
+        except Exception:
+            pass
+        fr = None
+# Replays menu/router gate: on iff a backend actually loaded.
+PC_REPLAYS = fr is not None
+# Catalog mode = the Android-style backend (static GitHub catalog, ok.ru
+# direct MP4) rather than the live fullraces.com scraper. Drives the menu:
+# catalog mode renders only categories that have entries (available_cats),
+# live mode keeps the full 12-folder lineup.
+CATALOG_MODE = PC_REPLAYS and fr.__name__.endswith('fullraces_android')
 
 # --- Constants ---
 ADDON = xbmcaddon.Addon()
@@ -70,7 +114,10 @@ CHANNELS = [
 DLIVE_BASE = 'https://dlive.sx'
 # Embed hosts rotate (dembed.top NXDOMAIN 2026-10-10; daddyliveplayer.st
 # still serves /premiumtv/daddy.php). Order: page-derived first, then these.
-EMBED_HOSTS = ['daddyliveplayer.st']
+# 2.8.14: dembed.st observed serving the embed 2026-11-02 — added as fallback
+# (page-derived candidate stays first; these cover page-host NXDOMAIN cases,
+# the known Android phone failure mode).
+EMBED_HOSTS = ['daddyliveplayer.st', 'dembed.st', 'bembed.sbs']
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 
@@ -81,8 +128,15 @@ def log(msg):
 def get_url(params):
     return "%s?%s" % (ADDON_URL, urllib.parse.urlencode(params))
 
+try:
+    import f1_servers as f1srv
+    f1srv.NOTIFY = log
+except Exception as _e:
+    f1srv = None
+    log("f1_servers import failed: %r" % _e)
 
-def fetch_page(url, headers=None, timeout=20):
+
+def fetch_page(url, headers=None, timeout=25):
     """Fetch HTML page using urllib."""
     try:
         h = headers or {'User-Agent': UA, 'Referer': DLIVE_BASE + '/',
@@ -158,10 +212,10 @@ def resolve_upstream_fresh(channel_id):
     watch_url = DLIVE_BASE + '/watch.php?id=' + channel_id
     watch_html = fetch_page(watch_url)
     if not watch_html:
-        raise RuntimeError('watch.php fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP1 watch.php unreachable (%s)' % watch_url)
     iframe_m = re.search(r'<iframe[^>]+src="(https?://[^"]*stream-\d+\.php[^"]*)"', watch_html)
     if not iframe_m:
-        raise RuntimeError('no stream iframe in watch.php for %s' % channel_id)
+        raise RuntimeError('STEP1b no stream iframe in watch.php for %s' % channel_id)
     stream_page_url = iframe_m.group(1)
 
     # Step 2: stream page -> player embed. The page's iframe HOST rotates
@@ -169,10 +223,10 @@ def resolve_upstream_fresh(channel_id):
     # walk candidate hosts: page-derived first, then EMBED_HOSTS.
     page_html = fetch_page(stream_page_url)
     if not page_html:
-        raise RuntimeError('stream page fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP2 stream page unreachable (%s)' % stream_page_url)
     iframe_m = re.search(r'<iframe[^>]+src="([^"]+)"', page_html)
     if not iframe_m:
-        raise RuntimeError('no iframe in stream page for %s' % channel_id)
+        raise RuntimeError('STEP2b no iframe in stream page for %s' % channel_id)
     embed_ref = iframe_m.group(1)
     if embed_ref.startswith('//'):
         embed_ref = 'https:' + embed_ref
@@ -204,17 +258,49 @@ def resolve_upstream_fresh(channel_id):
             break
         log("Embed host failed: %s" % candidate_url)
     if not player_html or not player_origin:
-        raise RuntimeError('all embed hosts failed for %s' % channel_id)
+        raise RuntimeError('STEP3 all embed hosts failed for %s (tried %s)'
+                           % (channel_id, ', '.join(
+                               urllib.parse.urlparse(c).netloc or c
+                               for c in candidates)))
     src_m = re.search(r'const\s+SRC\s*=\s*"([^"]+)"', player_html)
     if not src_m:
-        raise RuntimeError('no const SRC in player page for %s' % channel_id)
+        raise RuntimeError('STEP3b no const SRC in player page for %s' % channel_id)
     upstream_m3u8 = src_m.group(1)
 
-    # Step 4: fetch the freshly-resolved upstream manifest
-    seg_headers = {'User-Agent': UA, 'Referer': player_origin}
+    # Step 4 (v2.8.11): the edge is token-gated. The player page's hls.js
+    # first GETs /api/playlist-token?slug=<first path part> (CORS: must send
+    # Origin+Referer of the embed — Referer alone gets 'forbidden', no
+    # Referer gets 'token required'), then plays SRC + '?t=<token>&_=<ms>'.
+    # Verified live 2026-10-26: tokened playlist 200, stego segments unwrap.
+    edge_p = urllib.parse.urlparse(upstream_m3u8)
+    slug = edge_p.path.strip('/').split('/')[0] if edge_p.path.strip('/') else ''
+    player_headers = {'User-Agent': UA,
+                      'Accept': '*/*',
+                      'Accept-Language': 'en-US,en;q=0.9',
+                      'Origin': player_origin.rstrip('/'),
+                      'Referer': player_origin,
+                      'Sec-Fetch-Dest': 'empty',
+                      'Sec-Fetch-Mode': 'cors',
+                      'Sec-Fetch-Site': 'cross-site'}
+    tok = ''
+    if slug:
+        try:
+            tok_api = '%s://%s/api/playlist-token?slug=%s' % (
+                edge_p.scheme, edge_p.netloc, slug)
+            tok_body = fetch_page(tok_api, player_headers, 10) or ''
+            tj = json.loads(tok_body.decode('utf-8', 'replace')
+                            if isinstance(tok_body, bytes) else tok_body)
+            tok = tj.get('token', '') or ''
+        except Exception as e:
+            log("playlist-token fetch failed (%s) — trying bare SRC" % e)
+    if tok:
+        upstream_m3u8 = '%s?t=%s&_=%d' % (upstream_m3u8, tok,
+                                          int(time.time() * 1000))
+    seg_headers = dict(player_headers)
     man = fetch_page(upstream_m3u8, seg_headers, 15)
     if not man or '#EXTM3U' not in man:
-        raise RuntimeError('upstream manifest fetch failed for %s' % channel_id)
+        raise RuntimeError('STEP4 edge manifest fetch failed for %s (%s)'
+                           % (channel_id, upstream_m3u8[:70]))
     return man, upstream_m3u8, seg_headers
 
 
@@ -230,8 +316,23 @@ def resolve_live_stream(channel_id):
     """
     if not channel_id:
         return None
+    last_err = None
+    for attempt in (1, 2):
+        try:
+            if attempt == 2:
+                log("Resolve retry attempt 2 for %s" % channel_id)
+                time.sleep(2)
+            man, upstream_m3u8, seg_headers = resolve_upstream_fresh(channel_id)
+            break
+        except Exception as e:
+            last_err = e
+            log("Resolve attempt %d error (dlive.sx): %s" % (attempt, e))
+    else:
+        log("Stream resolve error (dlive.sx): %s" % last_err)
+        resolve_live_stream.last_error = str(last_err)
+        return None
+    resolve_live_stream.last_error = ''
     try:
-        man, upstream_m3u8, seg_headers = resolve_upstream_fresh(channel_id)
         seg_urls = [l.strip() for l in man.splitlines()
                     if l.strip() and not l.startswith('#')]
         if not seg_urls:
@@ -428,6 +529,7 @@ class UnwrapProxy:
     HEAL_POLL_FAILURES = 3   # hard manifest-poll failures before heal
     HEAL_FROZEN_SECONDS = 45  # window unchanged this long == stale
     HEAL_BACKOFF = 20     # seconds between re-resolve attempts
+    TOKEN_TTL = 110.0     # v2.8.11: edge playlist-token lifetime (api: ~120s)
 
     def __init__(self):
         self.server = None
@@ -452,6 +554,56 @@ class UnwrapProxy:
         self.last_ledger_len = -1
         self._healing = threading.Event()       # re-resolve in progress
         self._heal_thread = None
+        # v2.8.11 edge token state ('' = edge is not token-gated)
+        self.token = ''
+        self.token_exp = 0.0
+
+    @staticmethod
+    def _split_token(url):
+        """v2.8.11: strip '?t=<token>&_=' from a tokened m3u8 URL; return
+        (token, bare_url). Bare URLs pass through untouched."""
+        try:
+            q = urllib.parse.urlsplit(url)
+        except Exception:
+            return '', url
+        tok = (urllib.parse.parse_qs(q.query).get('t') or [''])[0]
+        base = urllib.parse.urlunsplit((q.scheme, q.netloc, q.path, '', ''))
+        return tok, base
+
+    def _retoken(self, base_url, hdrs):
+        """v2.8.11: fetch a fresh <edge>/api/playlist-token for base_url.
+        Returns a tokened URL on success, '' on failure (stale token then
+        trips the normal poll-failure -> heal cycle, which re-resolves)."""
+        p = urllib.parse.urlsplit(base_url)
+        slug = p.path.strip('/').split('/')[0] if p.path.strip('/') else ''
+        if not slug:
+            return ''
+        thdrs = dict(hdrs)
+        thdrs['Accept'] = 'application/json'
+        try:
+            req = urllib.request.Request(
+                '%s://%s/api/playlist-token?slug=%s' % (p.scheme, p.netloc, slug),
+                headers=thdrs)
+            with urllib.request.urlopen(req, timeout=10,
+                                        context=_SSL_CTX) as resp:
+                tj = json.loads(resp.read().decode('utf-8', 'replace'))
+        except Exception as e:
+            log("playlist-token refresh failed: %s" % e)
+            with self._lock:
+                self.token_exp = time.time() + 20   # back off; heal covers it
+            return ''
+        tok = tj.get('token', '') or ''
+        if not tok:
+            return ''
+        try:
+            ttl = float(tj.get('ttl') or 120.0)
+        except (TypeError, ValueError):
+            ttl = 120.0
+        with self._lock:
+            self.token = tok
+            self.token_exp = time.time() + max(30.0, ttl - 8.0)
+        log("playlist-token refreshed (ttl %.0fs)" % ttl)
+        return base_url
 
     def _cache_put(self, idx, ts):
         with self._cache_lock:
@@ -511,9 +663,13 @@ class UnwrapProxy:
     def load_manifest(self, upstream_m3u8, manifest_text, seg_headers):
         """First load: reset ledger and start from segment 0."""
         urls, durs = self._parse_playlist(manifest_text)
+        tok = UnwrapProxy._split_token(upstream_m3u8)[0]
+        tok_exp = time.time() + self.TOKEN_TTL if tok else 0.0
         with self._lock:
             self.upstream_m3u8 = upstream_m3u8
             self.seg_headers = dict(seg_headers)
+            self.token = tok
+            self.token_exp = tok_exp
             self.ledger = []
             self._seen = set()
             self.media_seq = 0
@@ -537,9 +693,12 @@ class UnwrapProxy:
         therefore never goes backwards — ffmpeg keeps playing seamlessly.
         """
         urls, durs = self._parse_playlist(manifest_text)
+        tok = UnwrapProxy._split_token(upstream_m3u8)[0]
         with self._lock:
             self.upstream_m3u8 = upstream_m3u8
             self.seg_headers = dict(seg_headers)
+            self.token = tok
+            self.token_exp = time.time() + self.TOKEN_TTL if tok else 0.0
             self.poll_failures = 0
             self.last_poll = time.time()
             before = len(self.ledger)
@@ -557,8 +716,25 @@ class UnwrapProxy:
         """Poll upstream manifest; absorb new segments, trim the front."""
         with self._lock:
             up, hdrs = self.upstream_m3u8, dict(self.seg_headers)
+            tok, exp = self.token, self.token_exp
+        # v2.8.11: tokened edge. Polls go out with ?t=<token>&_=<ms>;
+        # refresh just before the ~120s TTL lapses so the window never
+        # stalls on an expired token mid-race.
+        if tok:
+            if not exp or time.time() >= exp:
+                fresh = self._retoken(self._split_token(up)[1], hdrs)
+                if fresh:
+                    with self._lock:
+                        up = self.upstream_m3u8 = fresh
+                    tok = self.token
+                elif time.time() < (self.token_exp if self.token_exp else 0):
+                    pass   # back-off set by failed _retoken; retry next poll
+            ts_ms = int(time.time() * 1000)
+            poll_url = '%s?t=%s&_=%d' % (self._split_token(up)[1], tok, ts_ms)
+        else:
+            poll_url = up
         try:
-            req = urllib.request.Request(up, headers=hdrs)
+            req = urllib.request.Request(poll_url, headers=hdrs)
             with urllib.request.urlopen(req, timeout=10,
                                         context=_SSL_CTX) as resp:
                 man = resp.read().decode('utf-8', errors='replace')
@@ -744,6 +920,17 @@ def show_main_menu():
     items = [
         {'label': 'Live F1 / Motorsport Streams',
          'url': get_url({'action': 'f1_live'}), 'is_folder': True},
+    ]
+    if PC_REPLAYS:   # v2.8.18: replays on every platform. Catalog mode shows
+        # only categories that actually have entries; PC/live scrape keeps
+        # the full static lineup.
+        if CATALOG_MODE:
+            for _slug, _label in fr.available_cats():
+                items.append({'label': _label,
+                              'url': get_url({'action': 'replays', 'cat': _slug}),
+                              'is_folder': True})
+        else:
+            items += [
         {'label': 'F1 2026 Race Replays',
          'url': get_url({'action': 'replays', 'cat': '2026'}), 'is_folder': True},
         {'label': 'F1 2025 Race Replays',
@@ -768,6 +955,8 @@ def show_main_menu():
          'url': get_url({'action': 'replays', 'cat': 'wrc'}), 'is_folder': True},
         {'label': 'Search Replays',
          'url': get_url({'action': 'search_replays'}), 'is_folder': True},
+        ]   # end PC_REPLAYS replays block (v2.8.18: all platforms)
+    items += [
         {'label': 'Settings',
          'url': get_url({'action': 'settings'}), 'is_folder': False},
     ]
@@ -807,8 +996,27 @@ def to_adelaide(time_str):
         return None
 
 
-def show_matches(matches, content_type='videos'):
+def show_matches(matches, content_type='videos', banner=None, alt=None):
     xbmcplugin.setContent(ADDON_HANDLE, content_type)
+    # 2.8.7 — top banner: current/next F1 event + Adelaide-local start time
+    if banner:
+        li = xbmcgui.ListItem(label=banner)
+        li.setProperty('IsPlayable', 'false')
+        li.setInfo('video', {'title': banner, 'plot': banner})
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, '', li, False)
+    # 2.8.7 — numbered backup servers (Sky F1 GB/DE/ES), listed right below
+    if alt:
+        for a in alt:
+            li = xbmcgui.ListItem(label=a['label'])
+            li.setProperty('IsPlayable', 'true')
+            li.setInfo('video', {'title': a['label'],
+                                 'plot': 'Backup Sky F1 server — %s (channel %s)' % (
+                                     a['label'], a['ch'])})
+            url = get_url({'action': 'play_alt', 'prov': a['prov'],
+                           'ch': str(a['ch'])})
+            # folder=False — IsPlayable items MUST be listed non-foldered;
+            # folder=True made Kodi navigate into them (empty-folder bug)
+            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, False)
     if not matches:
         li = xbmcgui.ListItem(label="No motorsport channels found right now.")
         li.setProperty('IsPlayable', 'false')
@@ -833,7 +1041,34 @@ def show_matches(matches, content_type='videos'):
 
 def show_f1_streams():
     channels = get_live_channels()
-    show_matches(channels)
+    banner = None
+    alt = None
+    if f1srv:
+        try:
+            banner = f1srv.banner_text()    # may be None (no F1 on right now)
+        except Exception as e:
+            log("banner failed: %r" % e)
+        try:
+            # English-language F1 feeds first (Josh's GB trio), then DE/IT/ES
+            order = [('nexa', 7), ('vertex', 7), ('kora', 7),
+                     ('nexa', 12), ('vertex', 12),
+                     ('nexa', 46), ('vertex', 46), ('nexa', 30)]
+            tags = {7: 'Sky F1 UK', 12: 'Sky F1 DE', 46: 'Sky F1 IT',
+                    30: 'F1 ES (DAZN)'}
+            seen = set()
+            alt = []
+            n = 0
+            for prov, ch in order:
+                if prov == 'kora':
+                    label_prov = 'kora (best-effort)'
+                else:
+                    label_prov = prov
+                n += 1
+                alt.append({'n': n, 'label': '%d. %s — %s' % (n, tags[ch], label_prov),
+                            'prov': prov, 'ch': ch})
+        except Exception as e:
+            log("alt list failed: %r" % e)
+    show_matches(channels, banner=banner, alt=alt)
 
 
 def search_events():
@@ -861,9 +1096,11 @@ def play_live_stream(channel_id):
     stream_url = resolve_live_stream(channel_id)
 
     if not stream_url:
-        xbmcgui.Dialog().notification(ADDON_NAME,
-                                       "Could not resolve stream. The channel may be offline.",
-                                       xbmcgui.NOTIFICATION_ERROR, 5000)
+        err = getattr(resolve_live_stream, 'last_error', '') or ''
+        msg = ('Could not resolve: %s' % (err[:90] or 'channel may be offline'))
+        log("Play failed: %s" % err)
+        xbmcgui.Dialog().notification(ADDON_NAME, msg,
+                                       xbmcgui.NOTIFICATION_ERROR, 8000)
         xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
         return
     log("Playing live: %s" % stream_url)
@@ -871,6 +1108,39 @@ def play_live_stream(channel_id):
                                    xbmcgui.NOTIFICATION_INFO, 5000)
     # Local unwrap proxy manifest — plain HTTP, no inputstream.adaptive
     # (Kodi's built-in ffmpeg player; inputstream.adaptive was crashing Kodi)
+    li = xbmcgui.ListItem(path=stream_url)
+    li.setProperty("IsPlayable", "true")
+    xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
+
+
+def play_alt_stream(prov, ch='7'):
+    """2.8.7 — backup Sky F1 servers (vertex/nexa/kora GB/DE/ES) via the
+    plain-HLS relay: same local-manifest playback pattern as the dlive
+    unwrap path (built-in ffmpeg player, no inputstream.adaptive)."""
+    if not f1srv:
+        xbmcgui.Dialog().notification(ADDON_NAME, "Backup servers unavailable",
+                                      xbmcgui.NOTIFICATION_ERROR, 5000)
+        xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
+        return
+    try:
+        port, _up = f1srv.get_relay().ensure(prov, int(ch))
+    except Exception as e:
+        log("relay ensure failed (%s ch%s): %r" % (prov, ch, e))
+        port = 0
+    if not port:
+        _why = ''
+        try:
+            _why = f1srv.http_error()
+        except Exception:
+            _why = ''
+        msg = ('Server %s unreachable%s' % (prov, (' — ' + _why[:70]) if _why else ''))
+        log("Alt %s failed: %s" % (prov, _why or 'resolve returned none'))
+        xbmcgui.Dialog().notification(ADDON_NAME, msg,
+                                      xbmcgui.NOTIFICATION_ERROR, 8000)
+        xbmcplugin.setResolvedUrl(ADDON_HANDLE, False, xbmcgui.ListItem())
+        return
+    stream_url = "http://127.0.0.1:%d/plain/stream.m3u8" % port
+    log("Playing alt server %s ch%s: %s" % (prov, ch, stream_url))
     li = xbmcgui.ListItem(path=stream_url)
     li.setProperty("IsPlayable", "true")
     xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
@@ -971,6 +1241,58 @@ def search_replays():
 
 # ============ ROUTER ============
 
+def _run_tv_diag():
+    """Hidden diagnostic: fullraces self-test inside Kodi's Python.
+    Trigger via plugin://plugin.video.f1streams/?action=tvdiag"""
+    import traceback as _tb
+    import os as _os
+    import sys as _sys
+    res = {}
+    # Raw vendored-lib import probe with real exception text
+    try:
+        _lib = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '_lib')
+        if _lib not in _sys.path:
+            _sys.path.insert(0, _lib)
+        import curl_cffi as _cc
+        res['vendored_ok'] = True
+        res['vendored_file'] = getattr(_cc, '__file__', '')
+        from curl_cffi import requests as _creq
+        res['requests_ok'] = True
+    except Exception:
+        res['vendored_ok'] = False
+        res['vendored_err'] = _tb.format_exc()
+    try:
+        import fullraces as fr
+        res['cf_loaded'] = fr._cf_requests is not None
+        res['cf_origin'] = getattr(fr._cf_requests, '__file__', '') if fr._cf_requests else ''
+        try:
+            races = fr.scrape_category('2026')
+            res['races_2026'] = len(races)
+            res['first_race'] = races[0]['title'] if races else ''
+        except Exception:
+            res['races_2026'] = -1
+            res['scrape_err'] = _tb.format_exc()[-600:]
+    except Exception:
+        res['cf_loaded'] = False
+        res['import_err'] = _tb.format_exc()[-600:]
+    try:
+        import sysconfig
+        res['py_version'] = sysconfig.get_python_version()
+    except Exception:
+        res['py_version'] = '?'
+    out_path = os.path.join(ADDON_DIR if 'ADDON_DIR' in dir() else '', 'tvtest-out.json') \
+        if False else 'C:/users/tv/AppData/Roaming/Kodi/addons/plugin.video.f1streams/tvtest-out.json'
+    try:
+        with open(out_path, 'w') as fh:
+            fh.write(json.dumps(res, indent=1))
+    except Exception:
+        try:
+            with open('C:/temp/tvtest-out.json', 'w') as fh:
+                fh.write(json.dumps(res, indent=1))
+        except Exception:
+            pass
+
+
 def router(paramstring):
     params = dict(urllib.parse.parse_qsl(paramstring))
     action = params.get('action', '')
@@ -979,6 +1301,18 @@ def router(paramstring):
         show_f1_streams()
     elif action == 'play_live':
         play_live_stream(params.get('channel_id', ''))
+    elif action == 'play_alt':
+        play_alt_stream(params.get('prov', ''), params.get('ch', '7'))
+    elif not PC_REPLAYS and action in (
+            'replays', 'race_parts', 'play_okru', 'search_replays'):
+        # v2.8.18: only reachable if BOTH backends failed to import — clean
+        # notice instead of a traceback dialog.
+        _lineup = xbmcgui.ListItem(
+            label='Race replays are unavailable — replay modules failed to'
+                  ' load. Try reinstalling or updating the addon.')
+        _lineup.setProperty('IsPlayable', 'false')
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, '', _lineup, False)
+        xbmcplugin.endOfDirectory(ADDON_HANDLE)
     elif action == 'replays':
         show_replays(params.get('cat', '2026'))
     elif action == 'race_parts':
@@ -989,10 +1323,9 @@ def router(paramstring):
         search_replays()
     elif action == 'settings':
         ADDON.openSettings()
+    elif action == 'tvdiag':
+        _run_tv_diag()
     else:
         show_main_menu()
 
 
-if __name__ == '__main__':
-    paramstring = sys.argv[2][1:] if len(sys.argv) > 2 else ''
-    router(paramstring)

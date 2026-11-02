@@ -57,7 +57,7 @@
 </addon>
 <addon
     id="plugin.video.f1streams"
-    version="2.8.17"
+    version="2.8.18"
     name="F1 Streams (Live + Replays)"
     provider-name="Josh"
 >
@@ -97,15 +97,19 @@ tokened and re-tokens at ~110s so long races never stall. v2.8.10 - Android-safe
 unverified SSL (Kodi Android's Python has no usable CA store — cert failures
 blanked every fetch; curl-impersonate.exe kept as Windows fallback only).
 v2.8.9 - New: 32-second delayed watch — the relay now pre-downloads the next ~32s of stream and publishes the playlist that far behind live, so upstream freezing bursts are ridden out invisibly (no stalls, no buffering spinner). Also: relay cache eviction so long races can't fill RAM.</s>
-        <news>v2.8.15 - DIAG2: backup-server "unreachable" toasts now append the real reason (DNS/timeout/SSL from f1_servers.http_error()). Android track gets the same code.
+        <news>v2.8.18 - REPLAYS EVERYWHERE: backend gate now self-dispatches —
+Windows+exe keeps the live fullraces.com scrape, everything else falls back
+to the GitHub replay-catalog (ok.ru direct MP4, the .ru streams) which has
+shipped in the Android flavor since 2.8.14 but was never menu-wired until
+now. Android replays restored. v2.8.15 - DIAG2: backup-server "unreachable" toasts now append the real reason (DNS/timeout/SSL from f1_servers.http_error()). Android track gets the same code.
 v2.8.8 - Fix: numbered backup servers listed as folders (empty on click) — now playable items. v2.8.7 - Backup servers live: numbered Sky F1 lineup — 1./2./3. Sky F1 UK (nexa/vertex/kora), 4./5. Sky F1 DE, 6. F1 ES — auto-failover on resolve failure, signatures re-resolved pre-emptively (~30min window). Top banner: current/next F1 event + Adelaide start time, e.g. "Singapore Grand Prix · starts 10:30pm". v2.8.3 - Self-healing upstream: if the edge/embed host dies mid-play ("It ran and died", stalls + demuxer EOF 2026-10-10), the proxy re-runs the resolve chain in the background and hot-appends fresh segments — play continues seamlessly, no sequence break (upstream rotated embeds twice that night: dembed.top, daddyliveplayer.st, bembed.sbs). v2.8.2 - Embed-host rotation fix: dembed.top NXDOMAIN broke resolution ("unplayable item" 2026-10-10). Resolver now walks page host + daddyliveplayer.st fallback (embed path+query kept). Referer = the embed host that worked. v2.8.1 - Live-window proxy rewrite: dedicated refresher thread, appendix ledger, prefetch, ThreadingHTTPServer (fixed ~15s stalls). Segment 403 fix: Referer must be assetrage.net
 v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, char-strip, slot reorder). English Sky F1 UK + DAZN F1 ES verified live. v2.7.0 - Lineup rebuilt: dlive.sx (current DaddyLive) now primary. Only 2 channels kept — Sky Sports F1 UK (English) + DAZN F1 ES (Spanish). Old daddylive channels.json + SportHD backups removed (dead upstream). v2.3.0 - Updated for daddylive.mov. v2.0.0 - Added fullraces.com race replays. v1.0.0 - Initial release.</news>
     </extension>
 </addon>
 <addon
     id="plugin.video.f1streams.android"
-    version="2.8.14"
-    name="F1 Streams (Android · Live)"
+    version="2.8.15"
+    name="F1 Streams (Android · Live + Replays)"
     provider-name="Josh"
 >
     <requires>
@@ -115,8 +119,8 @@ v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, 
         <provides>video</provides>
     </extension>
     <extension point="xbmc.addon.metadata">
-        <summary>Watch F1 live streams in Kodi (Android build)</summary>
-        <description>LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen) — Android-flavoured build: pure-Python stdlib only, no bundled Windows binaries. Replays: GitHub replay-catalog (ok.ru only — Dailymotion stripped 2026-11-02).</description>
+        <summary>Watch F1 live streams and race replays in Kodi (Android build)</summary>
+        <description>LIVE F1/motorsport streams from daddylive (race, qualifying, practice as they happen), plus FULL RACE REPLAYS from a GitHub replay-catalog — ok.ru direct MP4 (the .ru streams as 2nd option; Dailymotion stripped 2026-11-02). Pure-Python stdlib only, no bundled Windows binaries.</description>
         <disclaimer>This addon scrapes publicly available streaming links. The author does not host or stream any content. For educational use only.</disclaimer>
         <platform>all</platform>
         <language>en</language>
@@ -127,8 +131,19 @@ v2.7.1 - Fixed stream resolver: assetrage.net _econfig now 3-layer (b64 chunks, 
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <s>Android track — stdlib-only live build. PC-history changelog lives in the PC addon's manifest.</s>
-        <news>v2.8.12 - DIAG2: "Server nexa unreachable" toasts now include the real reason (DNS fail / timeout / SSL error) from f1_servers.http_error() — phone-side cause is visible without a log.
+        <s>v2.8.18 - REPLAYS ARE BACK ON ANDROID: replays were silently hidden
+since the 2.8.13 platform split even though the catalog module shipped in
+every zip — the backend gate now self-dispatches (Windows+exe → live
+fullraces scrape; everything else → GitHub replay-catalog via ok.ru, pure
+stdlib). Menu, search and playback all live on the phone. v2.8.14 - DIAG: resolve failures toast the exact failing STEP (STEP1
+watch.php / STEP2 stream page / STEP3 embed hosts / STEP4 edge manifest).
+Resolve retries once (2s) before failing. Wider embed fallbacks: +dembed.st,
++bembed.sbs. fetch_page timeout 20s->25s.</s>
+        <news>v2.8.18 - REPLAYS ON ANDROID: backend gate now self-dispatches —
+GitHub replay-catalog (ok.ru direct MP4, the .ru streams) serves replays,
+search and playback on Android; Windows+exe keeps the live fullraces scrape.
+main.py is byte-identical on both tracks from this version.
+v2.8.12 - DIAG2: "Server nexa unreachable" toasts now include the real reason (DNS fail / timeout / SSL error) from f1_servers.http_error() — phone-side cause is visible without a log.
 v2.8.11 - DIAG: on a failed resolve, the toast now shows the exact
 failing STEP (STEP1 watch.php / STEP2 stream page / STEP3 embed hosts /
 STEP4 edge manifest) so phone-side failures are self-reported. Resolve

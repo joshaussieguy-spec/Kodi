@@ -207,6 +207,38 @@ def scrape_category(slug, page=1):
     return _catalog.races(slug)
 
 
+# --- category visibility (v2.8.15) -------------------------------------
+# The shared main.py renders 12 static category folders (site slugs). The
+# seed catalog only carries cats: ['2026'], so on Android 11 of 12 folders
+# would open as "No replays found". Expose which categories actually have
+# entries so main.py can hide the empty ones (PC/live mode ignores this
+# and keeps the static list).
+
+_CATALOG_CAT_LABELS = {
+    '2026': 'F1 2026 Race Replays',
+    '2025': 'F1 2025 Race Replays',
+    'watch/formula_1/formula_1_2024/21': 'F1 2024 Race Replays',
+    'formula1-2022': 'F1 Classic Archive (2022)',
+    'f2-full-races': 'Formula 2 Replays',
+    'f3-full-races': 'Formula 3 Replays',
+    'formula-e': 'Formula E Replays',
+    'nascar': 'NASCAR Replays',
+    'indycar': 'IndyCar Replays',
+    'wsbk': 'World Superbike Replays',
+    'wrc': 'World Rally Championship',
+}
+
+
+def available_cats():
+    """Return [(slug, label)] for categories that currently have races."""
+    data = _catalog.load()
+    out = []
+    for slug, label in _CATALOG_CAT_LABELS.items():
+        if _catalog.races(slug):
+            out.append((slug, label))
+    return out
+
+
 def scrape_race_page(race_url):
     """Race detail. Two tiers:
     1. If the catalog entry carries ok_ru ids directly (catalog v2), use them.
